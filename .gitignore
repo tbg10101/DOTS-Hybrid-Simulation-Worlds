@@ -1,0 +1,30 @@
+# =============== #
+# Unity generated #
+# =============== #
+/Examples~/Hybrid Simulation Test Project/Library
+/Examples~/Hybrid Simulation Test Project/Logs
+/Examples~/Hybrid Simulation Test Project/Obj
+/Examples~/Hybrid Simulation Test Project/Temp
+/Examples~/Hybrid Simulation Test Project/UnityGenerated
+/Examples~/Hybrid Simulation Test Project/UserSettings
+
+*.sln
+*.csproj
+
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ========================= #
+# JetBrains Rider generated #
+# ========================= #
+.idea
