@@ -15,4 +15,6 @@ Prefabs and EntityArchetypes are managed in the Bootstrapper class as well. Util
 
 Add a GameObject with ResetDotsOnDestroy into your scene to clean things up when the scene transitions.
 
+Remeber to add `UNITY_DISABLE_AUTOMATIC_SYSTEM_BOOTSTRAP` to the Scripting Define Symbols in Project Settings > Player if you want to turn off the default world that Unity creates. This doesn't stop you from using any of the default systems but you will need to set them up in a Bootstrapper.
+
 See the Example scene for more information.
