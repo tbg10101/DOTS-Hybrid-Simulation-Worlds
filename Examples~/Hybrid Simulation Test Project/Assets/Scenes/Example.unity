@@ -394,8 +394,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefabs:
-  - ArchetypeProducer: {fileID: 11400000, guid: 2edfc5aa963d22c4e8ea8e4795d2d3e8, type: 2}
-    Prefab: {fileID: 8475769614565911509, guid: 623b4872363a965488030ae17263a3fd, type: 3}
+  - {fileID: 11400000, guid: 2edfc5aa963d22c4e8ea8e4795d2d3e8, type: 2}
   _simulationSystems:
   - {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
   _presentationSystems:

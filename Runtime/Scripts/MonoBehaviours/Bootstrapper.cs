@@ -33,7 +33,8 @@ namespace Software10101.DOTS.MonoBehaviours {
     /// </summary>
     public class Bootstrapper : WorldBehaviour {
         [SerializeField]
-        private PrefabAndArchetype[] _prefabs = new PrefabAndArchetype[0];
+        private ArchetypeProducer[] _prefabs = null;
+        private EntityArchetype[] _prefabArchetypes = null;
         private readonly Dictionary<GameObject ,int> _prefabIndices = new Dictionary<GameObject ,int>();
 
         [SerializeField]
@@ -65,10 +66,11 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up archetypes
             EntityManager entityManager = EntityManager;
 
-            for (int i = 0; i < _prefabs.Length; i++) {
-                PrefabAndArchetype p = _prefabs[i];
+            _prefabArchetypes = new EntityArchetype[_prefabs.Length];
 
-                p.Archetype = p.ArchetypeProducer.Produce(entityManager);
+            for (int i = 0; i < _prefabs.Length; i++) {
+                ArchetypeProducer p = _prefabs[i];
+                _prefabArchetypes[i] = p.Produce(entityManager);
                 _prefabIndices[p.Prefab.gameObject] = i;
             }
         }
@@ -89,7 +91,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             EntityCommandBuffer entityCommandBuffer =
                 GetExistingSystem<PostUpdatePresentationEntityCommandBufferSystem>().CreateCommandBuffer();
 
-            Entity entity = entityCommandBuffer.CreateEntity(_prefabs[prefabIndex].Archetype);
+            Entity entity = entityCommandBuffer.CreateEntity(_prefabArchetypes[prefabIndex]);
             entityCommandBuffer.AddComponent(entity, new InitComponentData {
                 PrefabIndex = prefabIndex
             });
@@ -102,14 +104,6 @@ namespace Software10101.DOTS.MonoBehaviours {
                 GetExistingSystem<PostUpdatePresentationEntityCommandBufferSystem>().CreateCommandBuffer();
 
             entityCommandBuffer.AddComponent(entity, new DestroyFlagComponentData());
-        }
-
-        [Serializable]
-        private class PrefabAndArchetype {
-            public ArchetypeProducer ArchetypeProducer = null;
-            public EntityMonoBehaviour Prefab = null;
-            [NonSerialized]
-            public EntityArchetype Archetype;
         }
     }
 }

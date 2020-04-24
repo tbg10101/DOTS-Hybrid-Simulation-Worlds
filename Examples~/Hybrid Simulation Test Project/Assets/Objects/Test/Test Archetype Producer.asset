@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e50b2783a74e9490437497d06cc731, type: 3}
   m_Name: Test Archetype Producer
   m_EditorClassIdentifier: 
+  _prefab: {fileID: 8475769614565911509, guid: 623b4872363a965488030ae17263a3fd, type: 3}
