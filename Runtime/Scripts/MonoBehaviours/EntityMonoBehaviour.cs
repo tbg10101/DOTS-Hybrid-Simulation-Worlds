@@ -48,7 +48,7 @@ namespace Software10101.DOTS.MonoBehaviours {
 #endif
         }
 
-        public virtual void OnDestroy() {
+        protected virtual void OnDestroy() {
             Instances.Remove(_entity);
         }
 
