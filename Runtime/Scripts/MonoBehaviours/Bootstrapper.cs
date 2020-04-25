@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Software10101.DOTS.Archetypes;
 using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
@@ -35,7 +34,7 @@ namespace Software10101.DOTS.MonoBehaviours {
         [SerializeField]
         private ArchetypeProducer[] _prefabs = null;
         private EntityArchetype[] _prefabArchetypes = null;
-        private readonly Dictionary<GameObject ,int> _prefabIndices = new Dictionary<GameObject ,int>();
+        private readonly Dictionary<ArchetypeProducer ,int> _prefabIndices = new Dictionary<ArchetypeProducer ,int>();
 
         [SerializeField]
         private SystemTypeReference[] _simulationSystems = new SystemTypeReference[0];
@@ -71,7 +70,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             for (int i = 0; i < _prefabs.Length; i++) {
                 ArchetypeProducer p = _prefabs[i];
                 _prefabArchetypes[i] = p.Produce(entityManager);
-                _prefabIndices[p.Prefab.gameObject] = i;
+                _prefabIndices[p] = i;
             }
         }
 
@@ -79,11 +78,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _prefabs[prefabIndex].Prefab;
         }
 
-        public (Entity, EntityCommandBuffer) Create(Component prefab) {
-            return Create(_prefabIndices[prefab.gameObject]);
-        }
-
-        public (Entity, EntityCommandBuffer) Create(GameObject prefab) {
+        public (Entity, EntityCommandBuffer) Create(ArchetypeProducer prefab) {
             return Create(_prefabIndices[prefab]);
         }
 
