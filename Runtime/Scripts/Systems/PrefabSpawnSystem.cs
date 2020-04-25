@@ -25,7 +25,9 @@ namespace Software10101.DOTS.Systems {
                     instance.Entity = entity;
                     instance.Bootstrapper = _bootstrapper;
 
+#if UNITY_EDITOR && ENTITY_NAME_SYNC
                     EntityManager.SetName(entity, instance.name);
+#endif
 
                     ecb.RemoveComponent<InitComponentData>(entity);
                     ecb.AddComponent(entity, new GameObjectFlagComponentData());
