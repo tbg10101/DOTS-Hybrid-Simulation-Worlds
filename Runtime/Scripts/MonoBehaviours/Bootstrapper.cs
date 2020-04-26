@@ -34,7 +34,7 @@ namespace Software10101.DOTS.MonoBehaviours {
         [SerializeField]
         private ArchetypeProducer[] _prefabs = null;
         private EntityArchetype[] _prefabArchetypes = null;
-        private readonly Dictionary<ArchetypeProducer ,int> _prefabIndices = new Dictionary<ArchetypeProducer ,int>();
+        private readonly Dictionary<ArchetypeProducer, int> _prefabIndices = new Dictionary<ArchetypeProducer ,int>();
 
         [SerializeField]
         private SystemTypeReference[] _simulationSystems = new SystemTypeReference[0];

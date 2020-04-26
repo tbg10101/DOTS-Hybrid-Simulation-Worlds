@@ -14,7 +14,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             _world = new WorldWrapper(name);
         }
 
-        private void OnDestroy() {
+        protected virtual void OnDestroy() {
             _world?.Dispose();
         }
 
