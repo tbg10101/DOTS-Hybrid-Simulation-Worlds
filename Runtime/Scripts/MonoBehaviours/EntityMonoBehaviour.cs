@@ -72,5 +72,10 @@ namespace Software10101.DOTS.MonoBehaviours {
 
             base.Destroy();
         }
+
+        /// <summary>
+        /// Called after the PrefabSpawnSystem instantiates the prefab.
+        /// </summary>
+        internal virtual void PostInstantiate() { }
     }
 }

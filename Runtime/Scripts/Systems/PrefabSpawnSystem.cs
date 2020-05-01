@@ -29,6 +29,8 @@ namespace Software10101.DOTS.Systems {
                     EntityManager.SetName(entity, instance.name);
 #endif
 
+                    instance.PostInstantiate();
+
                     ecb.RemoveComponent<InitComponentData>(entity);
                     ecb.AddComponent(entity, new GameObjectFlagComponentData());
                 })
