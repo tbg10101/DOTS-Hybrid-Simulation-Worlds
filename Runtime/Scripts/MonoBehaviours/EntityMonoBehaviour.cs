@@ -76,6 +76,6 @@ namespace Software10101.DOTS.MonoBehaviours {
         /// <summary>
         /// Called after the PrefabSpawnSystem instantiates the prefab.
         /// </summary>
-        internal virtual void PostInstantiate() { }
+        internal virtual void OnPostInstantiate() { }
     }
 }
