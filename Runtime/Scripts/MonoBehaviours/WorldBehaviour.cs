@@ -103,12 +103,10 @@ namespace Software10101.DOTS.MonoBehaviours {
             switch (group) {
                 case IList<ComponentSystemBase> lcsg:
                     lcsg.Add(system);
-                    break;
-                case ComponentSystemGroup csg:
-                    csg.AddSystemToUpdateList(system);
-                    break;
+                    return;
                 default:
-                    throw new Exception("Group must be compatible.");
+                    group.AddSystemToUpdateList(system);
+                    return;
             }
         }
     }

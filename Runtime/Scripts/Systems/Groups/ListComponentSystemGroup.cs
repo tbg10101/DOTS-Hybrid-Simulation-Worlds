@@ -2,15 +2,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using Unity.Entities;
 using UnityEngine;
 
 namespace Software10101.DOTS.Systems.Groups {
+    /// <summary>
+    /// Component system group that acts like a List. Not compatible with unmanaged systems.
+    /// </summary>
     public abstract class ListComponentSystemGroup :
         ComponentSystemGroup,
         IList<ComponentSystemBase>,
         IReadOnlyList<ComponentSystemBase>,
         IList {
+
+        private List<ComponentSystemBase> _underlyingSystemsToUpdate;
+        private static readonly FieldInfo UnderlyingSystemsToUpdateField = typeof(ComponentSystemGroup).GetField(
+            "m_systemsToUpdate",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        private List<ComponentSystemBase> _underlyingSystemsToRemove;
+        private static readonly FieldInfo UnderlyingSystemsToRemoveField = typeof(ComponentSystemGroup).GetField(
+            "m_systemsToRemove",
+            BindingFlags.Instance | BindingFlags.NonPublic);
 
         private ComponentSystemBase[] _systems = new ComponentSystemBase[0];
         private readonly List<ComponentSystemBase> _mutableSystemsList = new List<ComponentSystemBase>();
@@ -24,12 +38,39 @@ namespace Software10101.DOTS.Systems.Groups {
 
         public override IEnumerable<ComponentSystemBase> Systems => _systems;
 
+        protected override void OnCreate() {
+            _underlyingSystemsToUpdate = (List<ComponentSystemBase>)UnderlyingSystemsToUpdateField.GetValue(this);
+            _underlyingSystemsToRemove = (List<ComponentSystemBase>)UnderlyingSystemsToRemoveField.GetValue(this);
+        }
+
         protected override void OnUpdate() {
+            if (_underlyingSystemsToUpdate.Count > 0) {
+                _mutableSystemsList.AddRange(_underlyingSystemsToUpdate);
+                _underlyingSystemsToUpdate.Clear();
+                _systemsListDirtyFlag = true;
+            }
+
+            if (_underlyingSystemsToRemove.Count > 0) {
+                _underlyingSystemsToRemove.ForEach(system => _mutableSystemsList.Remove(system));
+                _underlyingSystemsToRemove.Clear();
+                _systemsListDirtyFlag = true;
+            }
+
             if (_systemsListDirtyFlag) {
                 _systemsListDirtyFlag = false;
                 _systems = _mutableSystemsList.ToArray();
             }
 
+            if (UpdateCallback == null) {
+                UpdateAllSystems();
+            } else {
+                while (UpdateCallback(this)) {
+                    UpdateAllSystems();
+                }
+            }
+        }
+
+        private void UpdateAllSystems() {
             int count = _systems.Length;
             int index;
 
