@@ -6,9 +6,8 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace Software10101.DOTS.Systems.Groups {
-    [Obsolete("This was an experiment, probably won't keep it.")]
     public abstract class ListComponentSystemGroup :
-        ComponentSystem,
+        ComponentSystemGroup,
         IList<ComponentSystemBase>,
         IReadOnlyList<ComponentSystemBase>,
         IList {
@@ -22,6 +21,8 @@ namespace Software10101.DOTS.Systems.Groups {
         public object SyncRoot => ((ICollection)_mutableSystemsList).SyncRoot;
         public bool IsFixedSize => ((IList)_mutableSystemsList).IsFixedSize;
         public bool IsReadOnly => ((ICollection<ComponentSystemBase>)_mutableSystemsList).IsReadOnly;
+
+        public override IEnumerable<ComponentSystemBase> Systems => _systems;
 
         protected override void OnUpdate() {
             if (_systemsListDirtyFlag) {

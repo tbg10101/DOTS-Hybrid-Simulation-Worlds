@@ -17,9 +17,6 @@ namespace Software10101.DOTS.Utils {
         private static readonly MethodInfo TriggerUpdateMethod = DummyWrapperType
             .GetMethod("TriggerUpdate", BindingFlags.Public | BindingFlags.Instance);
 
-        private static readonly FieldInfo CurrentPlayerLoopField = typeof(ScriptBehaviourUpdateOrder)
-            .GetField("currentPlayerLoop", BindingFlags.Static | BindingFlags.NonPublic);
-
         /// <summary>
         /// Adds a system to the player loop in the same way that
         /// <see cref="Unity.Entities.ScriptBehaviourUpdateOrder.UpdatePlayerLoop"/> does.
@@ -56,7 +53,6 @@ namespace Software10101.DOTS.Utils {
                     currentPlayerLoop.subSystemList[i].subSystemList = newSubSystems;
 
                     PlayerLoop.SetPlayerLoop(currentPlayerLoop);
-                    CurrentPlayerLoopField.SetValue(null, currentPlayerLoop);
 
                     return;
                 }
@@ -114,7 +110,6 @@ namespace Software10101.DOTS.Utils {
                     currentPlayerLoop.subSystemList[i].subSystemList = newSubSystems;
 
                     PlayerLoop.SetPlayerLoop(currentPlayerLoop);
-                    CurrentPlayerLoopField.SetValue(null, currentPlayerLoop);
 
                     return;
                 }
@@ -140,10 +135,6 @@ namespace Software10101.DOTS.Utils {
 
             if (TriggerUpdateMethod == null) {
                 throw new Exception("Could not find TriggerUpdate!");
-            }
-
-            if (CurrentPlayerLoopField == null) {
-                throw new Exception("Could not find currentPlayerLoop!");
             }
 
             if (DummyWrapperSystem == null) {

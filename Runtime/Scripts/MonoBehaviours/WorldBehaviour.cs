@@ -26,15 +26,15 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _world.GetOrCreateSystem<T>(parent);
         }
 
-        public T GetOrCreateSystem<T>(ComponentSystemBase group) where T : ComponentSystemBase {
+        public T GetOrCreateSystem<T>(ComponentSystemGroup group) where T : ComponentSystemBase {
             return _world.GetOrCreateSystem<T>(group);
         }
 
-        public ComponentSystemBase GetOrCreateSystem(ComponentSystemBase group, Type systemType) {
+        public ComponentSystemBase GetOrCreateSystem(ComponentSystemGroup group, Type systemType) {
             return _world.GetOrCreateSystem(group, systemType);
         }
 
-        public ComponentSystemBase AddSystem(ComponentSystemBase group, ComponentSystemBase system) {
+        public ComponentSystemBase AddSystem(ComponentSystemGroup group, ComponentSystemBase system) {
             return _world.AddSystem(group, system);
         }
     }
@@ -67,7 +67,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
-        public T GetOrCreateSystem<T>(ComponentSystemBase group) where T : ComponentSystemBase {
+        public T GetOrCreateSystem<T>(ComponentSystemGroup group) where T : ComponentSystemBase {
             T system = _world.GetOrCreateSystem<T>();
 
             AddSystemToGroup(group, system);
@@ -75,7 +75,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
-        public ComponentSystemBase GetOrCreateSystem(ComponentSystemBase group, Type systemType) {
+        public ComponentSystemBase GetOrCreateSystem(ComponentSystemGroup group, Type systemType) {
             ComponentSystemBase system = _world.GetOrCreateSystem(systemType);
 
             AddSystemToGroup(group, system);
@@ -83,7 +83,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
-        public ComponentSystemBase AddSystem(ComponentSystemBase group, ComponentSystemBase system) {
+        public ComponentSystemBase AddSystem(ComponentSystemGroup group, ComponentSystemBase system) {
             _world.AddSystem(system);
 
             AddSystemToGroup(group, system);
@@ -99,13 +99,13 @@ namespace Software10101.DOTS.MonoBehaviours {
             _world.Dispose();
         }
 
-        private void AddSystemToGroup(ComponentSystemBase group, ComponentSystemBase system) {
+        private void AddSystemToGroup(ComponentSystemGroup group, ComponentSystemBase system) {
             switch (group) {
-                case ComponentSystemGroup csg:
-                    csg.AddSystemToUpdateList(system);
-                    break;
                 case IList<ComponentSystemBase> lcsg:
                     lcsg.Add(system);
+                    break;
+                case ComponentSystemGroup csg:
+                    csg.AddSystemToUpdateList(system);
                     break;
                 default:
                     throw new Exception("Group must be compatible.");
