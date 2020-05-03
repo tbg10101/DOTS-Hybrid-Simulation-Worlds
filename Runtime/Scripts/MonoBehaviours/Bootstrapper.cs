@@ -65,7 +65,10 @@ namespace Software10101.DOTS.MonoBehaviours {
             GetOrCreateSystem<PresentationDestroySystem>(presGroup);
 
             // set up archetypes
-            foreach (ArchetypeProducer archetypeProducer in _archetypeProducers) {
+            ArchetypeProducer[] initialArchetypeProducers = _archetypeProducers.ToArray();
+            _archetypeProducers.Clear();
+
+            foreach (ArchetypeProducer archetypeProducer in initialArchetypeProducers) {
                 AddArchetypeProducer(archetypeProducer);
             }
         }
@@ -77,6 +80,7 @@ namespace Software10101.DOTS.MonoBehaviours {
 
             index = _archetypes.Count;
             _archetypes.Add(archetypeProducer.Produce(EntityManager));
+            _archetypeProducers.Add(archetypeProducer);
             _archetypeProducerIndices[archetypeProducer] = index;
             return index;
         }
