@@ -6,6 +6,7 @@ using Software10101.DOTS.Systems.EntityCommandBufferSystems;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using UnityEngine.Serialization;
 using PresentationSystemGroup = Software10101.DOTS.Systems.Groups.PresentationSystemGroup;
 using SimulationSystemGroup = Software10101.DOTS.Systems.Groups.SimulationSystemGroup;
 
@@ -31,10 +32,11 @@ namespace Software10101.DOTS.MonoBehaviours {
     /// called. (see example)
     /// </summary>
     public class Bootstrapper : WorldBehaviour {
+        [FormerlySerializedAs("_prefabs")]
         [SerializeField]
-        private ArchetypeProducer[] _prefabs = null;
-        private EntityArchetype[] _prefabArchetypes = null;
-        private readonly Dictionary<ArchetypeProducer, int> _prefabIndices = new Dictionary<ArchetypeProducer ,int>();
+        private ArchetypeProducer[] _archetypeProducers = null;
+        private EntityArchetype[] _archetypes = null;
+        private readonly Dictionary<ArchetypeProducer, int> _archetypeProducerIndices = new Dictionary<ArchetypeProducer ,int>();
 
         [SerializeField]
         private SystemTypeReference[] _simulationSystems = new SystemTypeReference[0];
@@ -65,28 +67,28 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up archetypes
             EntityManager entityManager = EntityManager;
 
-            _prefabArchetypes = new EntityArchetype[_prefabs.Length];
+            _archetypes = new EntityArchetype[_archetypeProducers.Length];
 
-            for (int i = 0; i < _prefabs.Length; i++) {
-                ArchetypeProducer p = _prefabs[i];
-                _prefabArchetypes[i] = p.Produce(entityManager);
-                _prefabIndices[p] = i;
+            for (int i = 0; i < _archetypeProducers.Length; i++) {
+                ArchetypeProducer p = _archetypeProducers[i];
+                _archetypes[i] = p.Produce(entityManager);
+                _archetypeProducerIndices[p] = i;
             }
         }
 
         internal EntityMonoBehaviour GetPrefab(int prefabIndex) {
-            return _prefabs[prefabIndex].Prefab;
+            return _archetypeProducers[prefabIndex].Prefab;
         }
 
         public (Entity, EntityCommandBuffer) Create(ArchetypeProducer prefab) {
-            return Create(_prefabIndices[prefab]);
+            return Create(_archetypeProducerIndices[prefab]);
         }
 
         public (Entity, EntityCommandBuffer) Create(int prefabIndex) {
             EntityCommandBuffer entityCommandBuffer =
                 GetExistingSystem<PostUpdatePresentationEntityCommandBufferSystem>().CreateCommandBuffer();
 
-            Entity entity = entityCommandBuffer.CreateEntity(_prefabArchetypes[prefabIndex]);
+            Entity entity = entityCommandBuffer.CreateEntity(_archetypes[prefabIndex]);
             entityCommandBuffer.AddComponent(entity, new InitComponentData {
                 PrefabIndex = prefabIndex
             });
