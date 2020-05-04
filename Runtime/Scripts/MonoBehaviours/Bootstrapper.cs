@@ -48,7 +48,6 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up systems
             SimulationSystemGroup simGroup = GetOrCreateSystem<SimulationSystemGroup>(typeof(FixedUpdate));
             GetOrCreateSystem<SimulationDestroySystem>(simGroup);
-            AddSystem(simGroup, new PrefabSpawnSystem(this));
             GetOrCreateSystem<PreSimulationEntityCommandBufferSystem>(simGroup);
             foreach (SystemTypeReference systemTypeReference in _simulationSystems) {
                 GetOrCreateSystem(simGroup, systemTypeReference.SystemType);
@@ -63,6 +62,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             GetOrCreateSystem<ManagedMonoBehaviourUpdateSystem>(presGroup);
             GetOrCreateSystem<PostUpdatePresentationEntityCommandBufferSystem>(presGroup);
             GetOrCreateSystem<PresentationDestroySystem>(presGroup);
+            AddSystem(presGroup, new PrefabSpawnSystem(this));
 
             // set up archetypes
             ArchetypeProducer[] initialArchetypeProducers = _archetypeProducers.ToArray();
