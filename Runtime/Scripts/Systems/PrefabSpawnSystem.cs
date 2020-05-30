@@ -18,9 +18,9 @@ namespace Software10101.DOTS.Systems {
 
             Entities
                 .WithoutBurst()
-                .ForEach((Entity entity, in InitComponentData component) => {
+                .ForEach((Entity entity, in InitComponentData initData) => {
                     // TODO use a pool instead
-                    EntityMonoBehaviour instance = Object.Instantiate(_bootstrapper.GetPrefab(component.PrefabIndex));
+                    EntityMonoBehaviour instance = Object.Instantiate(_bootstrapper.GetPrefab(initData.PrefabIndex));
 
                     instance.Entity = entity;
                     instance.Bootstrapper = _bootstrapper;

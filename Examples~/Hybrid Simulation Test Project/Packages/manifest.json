@@ -1,9 +1,9 @@
 {
   "dependencies": {
     "com.10101software.dots.hybridsimulation": "file:../../..",
-    "com.unity.entities": "0.10.0-preview.6",
+    "com.unity.entities": "0.11.0-preview.7",
     "com.unity.ide.rider": "1.2.1",
-    "com.unity.render-pipelines.universal": "8.0.1",
+    "com.unity.render-pipelines.universal": "8.1.0",
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.assetbundle": "1.0.0",

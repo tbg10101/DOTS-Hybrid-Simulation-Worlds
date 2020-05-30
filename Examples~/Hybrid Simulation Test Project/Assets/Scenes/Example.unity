@@ -393,7 +393,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b75e3d60c12d4d559cae47277faee063, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefabs:
+  _archetypeProducers:
   - {fileID: 11400000, guid: 2edfc5aa963d22c4e8ea8e4795d2d3e8, type: 2}
   _simulationSystems:
   - {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
@@ -517,7 +517,7 @@ GameObject:
   - component: {fileID: 1317645714}
   - component: {fileID: 1317645713}
   m_Layer: 0
-  m_Name: Far Camera
+  m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
