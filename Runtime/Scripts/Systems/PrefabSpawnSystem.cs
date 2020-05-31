@@ -14,12 +14,13 @@ namespace Software10101.DOTS.Systems {
         }
 
         protected override void OnUpdate() {
-            EntityCommandBuffer ecb = World.GetExistingSystem<PreSimulationEntityCommandBufferSystem>().CreateCommandBuffer();
+            EntityCommandBuffer ecb = World
+                .GetExistingSystem<PreUpdatePresentationEntityCommandBufferSystem>()
+                .CreateCommandBuffer();
 
             Entities
                 .WithoutBurst()
-                .ForEach((Entity entity, in InitComponentData initData) => {
-                    // TODO use a pool instead
+                .ForEach((Entity entity, in SpawnPrefabComponentData initData) => {
                     EntityMonoBehaviour instance = Object.Instantiate(_bootstrapper.GetPrefab(initData.PrefabIndex));
 
                     instance.Entity = entity;
@@ -31,7 +32,8 @@ namespace Software10101.DOTS.Systems {
 
                     instance.OnPostInstantiate();
 
-                    ecb.RemoveComponent<InitComponentData>(entity);
+                    // doing these in an ECB makes it a ton faster
+                    ecb.RemoveComponent<SpawnPrefabComponentData>(entity);
                     ecb.AddComponent(entity, new GameObjectFlagComponentData());
                 })
                 .Run(); // must be on the main thread

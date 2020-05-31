@@ -46,22 +46,22 @@ namespace Software10101.DOTS.MonoBehaviours {
 
         protected virtual void Start() {
             // set up systems
-            SimulationSystemGroup simGroup = GetOrCreateSystem<SimulationSystemGroup>(typeof(FixedUpdate));
-            GetOrCreateSystem<SimulationDestroySystem>(simGroup);
-            GetOrCreateSystem<PreSimulationEntityCommandBufferSystem>(simGroup);
+            SimulationSystemGroup simGroup = AddSystem(typeof(FixedUpdate), new SimulationSystemGroup());
+            AddSystem(simGroup, new SimulationDestroySystem());
+            AddSystem(simGroup, new PreSimulationEntityCommandBufferSystem());
             foreach (SystemTypeReference systemTypeReference in _simulationSystems) {
                 GetOrCreateSystem(simGroup, systemTypeReference.SystemType);
             }
-            GetOrCreateSystem<PostSimulationEntityCommandBufferSystem>(simGroup);
+            AddSystem(simGroup, new PostSimulationEntityCommandBufferSystem());
 
-            PresentationSystemGroup presGroup = GetOrCreateSystem<PresentationSystemGroup>(typeof(Update));
+            PresentationSystemGroup presGroup = AddSystem(typeof(Update), new PresentationSystemGroup());
             foreach (SystemTypeReference systemTypeReference in _presentationSystems) {
                 GetOrCreateSystem(presGroup, systemTypeReference.SystemType);
             }
-            GetOrCreateSystem<PreUpdatePresentationEntityCommandBufferSystem>(presGroup);
-            GetOrCreateSystem<ManagedMonoBehaviourUpdateSystem>(presGroup);
-            GetOrCreateSystem<PostUpdatePresentationEntityCommandBufferSystem>(presGroup);
-            GetOrCreateSystem<PresentationDestroySystem>(presGroup);
+            AddSystem(presGroup, new PreUpdatePresentationEntityCommandBufferSystem());
+            AddSystem(presGroup, new ManagedMonoBehaviourUpdateSystem());
+            AddSystem(presGroup, new PostUpdatePresentationEntityCommandBufferSystem());
+            AddSystem(presGroup, new PresentationDestroySystem());
             AddSystem(presGroup, new PrefabSpawnSystem(this));
 
             // set up archetypes
@@ -98,7 +98,7 @@ namespace Software10101.DOTS.MonoBehaviours {
                 GetExistingSystem<PostUpdatePresentationEntityCommandBufferSystem>().CreateCommandBuffer();
 
             Entity entity = entityCommandBuffer.CreateEntity(_archetypes[prefabIndex]);
-            entityCommandBuffer.AddComponent(entity, new InitComponentData {
+            entityCommandBuffer.AddComponent(entity, new SpawnPrefabComponentData {
                 PrefabIndex = prefabIndex
             });
 

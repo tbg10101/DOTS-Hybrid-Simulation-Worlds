@@ -22,7 +22,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _world.GetExistingSystem<T>();
         }
 
-        public T GetOrCreateSystem<T>(Type parent) where T : ComponentSystemBase {
+        internal T GetOrCreateSystem<T>(Type parent) where T : ComponentSystemBase {
             return _world.GetOrCreateSystem<T>(parent);
         }
 
@@ -34,8 +34,20 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _world.GetOrCreateSystem(group, systemType);
         }
 
+        public T AddSystem<T>(ComponentSystemGroup group, T system) where T : ComponentSystemBase {
+            return _world.AddSystem(group, system);
+        }
+
         public ComponentSystemBase AddSystem(ComponentSystemGroup group, ComponentSystemBase system) {
             return _world.AddSystem(group, system);
+        }
+
+        internal T AddSystem<T>(Type parent, T system) where T : ComponentSystemBase {
+            return _world.AddSystem(parent, system);
+        }
+
+        internal ComponentSystemBase AddSystem(Type parent, ComponentSystemBase system) {
+            return _world.AddSystem(parent, system);
         }
     }
 
@@ -54,7 +66,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _world.GetExistingSystem<T>();
         }
 
-        public T GetOrCreateSystem<T>(Type parent) where T : ComponentSystemBase {
+        internal T GetOrCreateSystem<T>(Type parent) where T : ComponentSystemBase {
             bool hasSystem = _world.GetExistingSystem<T>() != null;
 
             T system = _world.GetOrCreateSystem<T>();
@@ -83,10 +95,27 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
+        public T AddSystem<T>(ComponentSystemGroup group, T system) where T : ComponentSystemBase {
+            return (T)AddSystem(group, (ComponentSystemBase)system);
+        }
+
         public ComponentSystemBase AddSystem(ComponentSystemGroup group, ComponentSystemBase system) {
             _world.AddSystem(system);
 
             AddSystemToGroup(group, system);
+
+            return system;
+        }
+
+        internal T AddSystem<T>(Type parent, T system) where T : ComponentSystemBase {
+            return (T)AddSystem(parent, (ComponentSystemBase)system);
+        }
+
+        internal ComponentSystemBase AddSystem(Type parent, ComponentSystemBase system) {
+            _world.AddSystem(system);
+
+            _topLevelSystems[system] = parent;
+            PlayerLoopUtil.AddSubSystem(parent, system);
 
             return system;
         }
