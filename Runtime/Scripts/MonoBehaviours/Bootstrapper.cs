@@ -3,6 +3,7 @@ using Software10101.DOTS.Archetypes;
 using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
 using Software10101.DOTS.Systems.EntityCommandBufferSystems;
+using Software10101.DOTS.Systems.Groups;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -41,8 +42,12 @@ namespace Software10101.DOTS.MonoBehaviours {
         [SerializeField]
         private SystemTypeReference[] _simulationSystems = new SystemTypeReference[0];
 
+        [FormerlySerializedAs("_presentationSystems")]
         [SerializeField]
-        private SystemTypeReference[] _presentationSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _presentationPreUpdateSystems = new SystemTypeReference[0];
+
+        [SerializeField]
+        private SystemTypeReference[] _presentationPostUpdateSystems = new SystemTypeReference[0];
 
         protected virtual void Start() {
             // set up systems
@@ -55,12 +60,17 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystem(simGroup, new PostSimulationEntityCommandBufferSystem());
 
             PresentationSystemGroup presGroup = AddSystem(typeof(Update), new PresentationSystemGroup());
-            foreach (SystemTypeReference systemTypeReference in _presentationSystems) {
-                GetOrCreateSystem(presGroup, systemTypeReference.SystemType);
+            PresentationPreUpdateSystemGroup presPreUpdateGroup = AddSystem(presGroup, new PresentationPreUpdateSystemGroup());
+            foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
+                GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
             }
             AddSystem(presGroup, new PreUpdatePresentationEntityCommandBufferSystem());
             AddSystem(presGroup, new ManagedMonoBehaviourUpdateSystem());
             AddSystem(presGroup, new PostUpdatePresentationEntityCommandBufferSystem());
+            PresentationPostUpdateSystemGroup presPostUpdateGroup = AddSystem(presGroup, new PresentationPostUpdateSystemGroup());
+            foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
+                GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
+            }
             AddSystem(presGroup, new PresentationDestroySystem());
             AddSystem(presGroup, new PrefabSpawnSystem(this));
 
