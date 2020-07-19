@@ -122,7 +122,8 @@ namespace Software10101.DOTS.MonoBehaviours {
         }
 
         public (Entity, EntityCommandBuffer) Create(int prefabIndex) {
-            EntityCommandBuffer ecb = GetExistingSystem<PostPresentationEntityCommandBufferSystem>().CreateCommandBuffer();
+            EntityCommandBuffer ecb =
+                GetExistingSystem<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>().CreateCommandBuffer();
 
             Entity entity = ecb.CreateEntity(_archetypes[prefabIndex]);
             ecb.AddComponent(entity, new SpawnPrefabComponentData {
@@ -133,7 +134,8 @@ namespace Software10101.DOTS.MonoBehaviours {
         }
 
         public void Destroy(Entity entity) {
-            EntityCommandBuffer ecb = GetExistingSystem<PostPresentationEntityCommandBufferSystem>().CreateCommandBuffer();
+            EntityCommandBuffer ecb =
+                GetExistingSystem<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>().CreateCommandBuffer();
             ecb.AddComponent(entity, new DestroyFlagComponentData());
         }
     }
