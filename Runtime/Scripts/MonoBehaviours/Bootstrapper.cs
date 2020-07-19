@@ -50,29 +50,47 @@ namespace Software10101.DOTS.MonoBehaviours {
         private SystemTypeReference[] _presentationPostUpdateSystems = new SystemTypeReference[0];
 
         protected virtual void Start() {
-            // set up systems
+            // set up simulation systems
             SimulationSystemGroup simGroup = AddSystem(typeof(FixedUpdate), new SimulationSystemGroup());
-            AddSystem(simGroup, new SimulationDestroySystem());
-            AddSystem(simGroup, new PreSimulationEntityCommandBufferSystem());
-            foreach (SystemTypeReference systemTypeReference in _simulationSystems) {
-                GetOrCreateSystem(simGroup, systemTypeReference.SystemType);
-            }
-            AddSystem(simGroup, new PostSimulationEntityCommandBufferSystem());
+            {
+                AddSystem(simGroup, new SimulationDestroySystem());
 
+                AddSystem(simGroup, new PreSimulationEntityCommandBufferSystem());
+                foreach (SystemTypeReference systemTypeReference in _simulationSystems) {
+                    GetOrCreateSystem(simGroup, systemTypeReference.SystemType);
+                }
+
+                AddSystem(simGroup, new PostSimulationEntityCommandBufferSystem());
+            }
+
+            // UI interactions happen before the presentation group
+
+            // set up presentation systems
             PresentationSystemGroup presGroup = AddSystem(typeof(Update), new PresentationSystemGroup());
-            PresentationPreUpdateSystemGroup presPreUpdateGroup = AddSystem(presGroup, new PresentationPreUpdateSystemGroup());
-            foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
-                GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
+            {
+                AddSystem(presGroup, new PrePresentationEntityCommandBufferSystem());
+
+                PresentationPreUpdateSystemGroup presPreUpdateGroup = AddSystem(presGroup, new PresentationPreUpdateSystemGroup());
+                foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
+                    GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
+                }
+
+                AddSystem(presGroup, new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem());
+                AddSystem(presGroup, new ManagedMonoBehaviourUpdateSystem());
+                AddSystem(presGroup, new PostManagedMonoBehaviourUpdateEntityCommandBufferSystem());
+
+                PresentationPostUpdateSystemGroup presPostUpdateGroup = AddSystem(presGroup, new PresentationPostUpdateSystemGroup());
+                foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
+                    GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
+                }
+
+                AddSystem(presGroup, new PostPresentationEntityCommandBufferSystem());
+
+                AddSystem(presGroup, new PresentationDestroySystem());
+                AddSystem(presGroup, new PrefabSpawnSystem(this));
+
+                AddSystem(presGroup, new EndOfFrameEntityCommandBufferSystem());
             }
-            AddSystem(presGroup, new PreUpdatePresentationEntityCommandBufferSystem());
-            AddSystem(presGroup, new ManagedMonoBehaviourUpdateSystem());
-            AddSystem(presGroup, new PostUpdatePresentationEntityCommandBufferSystem());
-            PresentationPostUpdateSystemGroup presPostUpdateGroup = AddSystem(presGroup, new PresentationPostUpdateSystemGroup());
-            foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
-                GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
-            }
-            AddSystem(presGroup, new PresentationDestroySystem());
-            AddSystem(presGroup, new PrefabSpawnSystem(this));
 
             // set up archetypes
             ArchetypeProducer[] initialArchetypeProducers = _archetypeProducers.ToArray();
@@ -104,22 +122,19 @@ namespace Software10101.DOTS.MonoBehaviours {
         }
 
         public (Entity, EntityCommandBuffer) Create(int prefabIndex) {
-            EntityCommandBuffer entityCommandBuffer =
-                GetExistingSystem<PostUpdatePresentationEntityCommandBufferSystem>().CreateCommandBuffer();
+            EntityCommandBuffer ecb = GetExistingSystem<PostPresentationEntityCommandBufferSystem>().CreateCommandBuffer();
 
-            Entity entity = entityCommandBuffer.CreateEntity(_archetypes[prefabIndex]);
-            entityCommandBuffer.AddComponent(entity, new SpawnPrefabComponentData {
+            Entity entity = ecb.CreateEntity(_archetypes[prefabIndex]);
+            ecb.AddComponent(entity, new SpawnPrefabComponentData {
                 PrefabIndex = prefabIndex
             });
 
-            return (entity, entityCommandBuffer);
+            return (entity, ecb);
         }
 
         public void Destroy(Entity entity) {
-            EntityCommandBuffer entityCommandBuffer =
-                GetExistingSystem<PostUpdatePresentationEntityCommandBufferSystem>().CreateCommandBuffer();
-
-            entityCommandBuffer.AddComponent(entity, new DestroyFlagComponentData());
+            EntityCommandBuffer ecb = GetExistingSystem<PostPresentationEntityCommandBufferSystem>().CreateCommandBuffer();
+            ecb.AddComponent(entity, new DestroyFlagComponentData());
         }
     }
 }

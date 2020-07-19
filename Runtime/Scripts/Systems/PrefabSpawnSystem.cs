@@ -15,7 +15,7 @@ namespace Software10101.DOTS.Systems {
 
         protected override void OnUpdate() {
             EntityCommandBuffer ecb = World
-                .GetExistingSystem<PreUpdatePresentationEntityCommandBufferSystem>()
+                .GetExistingSystem<EndOfFrameEntityCommandBufferSystem>()
                 .CreateCommandBuffer();
 
             Entities

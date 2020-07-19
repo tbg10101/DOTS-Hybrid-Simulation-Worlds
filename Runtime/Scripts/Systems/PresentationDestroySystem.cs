@@ -10,9 +10,7 @@ namespace Software10101.DOTS.Systems {
                 .WithStructuralChanges()
                 .WithAll<DestroyFlagComponentData, GameObjectFlagComponentData>()
                 .ForEach((Entity entity) => {
-                    // TODO use a pool instead
                     EntityMonoBehaviour.Get(entity).Destroy();
-
                     EntityManager.RemoveComponent<GameObjectFlagComponentData>(entity);
                 })
                 .Run(); // must be on the main thread
