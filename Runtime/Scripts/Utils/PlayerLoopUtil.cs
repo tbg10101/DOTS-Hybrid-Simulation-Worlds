@@ -116,6 +116,13 @@ namespace Software10101.DOTS.Utils {
             }
         }
 
+        /// <summary>
+        /// Resets the player loop to the default.
+        /// </summary>
+        public static void ResetPlayerLoop() {
+            PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
+        }
+
         private static PlayerLoopSystem.UpdateFunction CreateDummyWrapper(ComponentSystemBase system) {
             object dummyWrapper = DummyWrapperConstructor.Invoke(new object[] { system });
 
