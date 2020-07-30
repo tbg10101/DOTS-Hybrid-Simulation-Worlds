@@ -8,7 +8,10 @@ namespace Software10101.DOTS.Utils {
     /// This should only be used for slow-moving data that cannot be stored in ECS, like references to GameObjects.
     /// </summary>
     public static class ReferenceTypeUtil {
-        private static readonly List<object> ManagedObjects = new List<object>();
+        private static readonly List<object> ManagedObjects = new List<object> {
+            null // the 0'th index is special since it is the default for an int
+        };
+
         private static readonly List<int> RemovedIndices = new List<int>();
 
         public static int Add(object o) {
@@ -38,6 +41,10 @@ namespace Software10101.DOTS.Utils {
         }
 
         public static void Remove(int index) {
+            if (index == 0) {
+                return;
+            }
+
             ManagedObjects[index] = null;
             RemovedIndices.Add(index);
         }

@@ -12,6 +12,8 @@ namespace Software10101.DOTS.Utils {
             WordStorage.Instance = null;
 
             PlayerLoopUtil.ResetPlayerLoop();
+
+            ReferenceTypeUtil.Clear();
         }
     }
 }
