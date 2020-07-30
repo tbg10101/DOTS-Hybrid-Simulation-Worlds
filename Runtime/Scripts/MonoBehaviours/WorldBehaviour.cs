@@ -14,6 +14,12 @@ namespace Software10101.DOTS.MonoBehaviours {
             _world = new WorldWrapper(name);
         }
 
+        protected void Update() {
+            if (_world.Disposed) {
+                Destroy(this);
+            }
+        }
+
         protected virtual void OnDestroy() {
             _world?.Dispose();
         }
@@ -57,6 +63,8 @@ namespace Software10101.DOTS.MonoBehaviours {
         private readonly Dictionary<ComponentSystemBase, Type> _topLevelSystems = new Dictionary<ComponentSystemBase, Type>();
 
         public EntityManager EntityManager => _world.EntityManager;
+
+        public bool Disposed => !_world.IsCreated;
 
         public WorldWrapper(string name) {
             _world = new World(name);
@@ -123,6 +131,10 @@ namespace Software10101.DOTS.MonoBehaviours {
         public void Dispose() {
             foreach (KeyValuePair<ComponentSystemBase,Type> systemEntry in _topLevelSystems) {
                 PlayerLoopUtil.RemoveSubSystem(systemEntry.Value, systemEntry.Key);
+            }
+
+            if (Disposed) {
+                return;
             }
 
             _world.Dispose();

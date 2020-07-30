@@ -1,3 +1,4 @@
+using Software10101.DOTS.MonoBehaviours;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -14,6 +15,8 @@ namespace Software10101.DOTS.Utils {
             PlayerLoopUtil.ResetPlayerLoop();
 
             ReferenceTypeUtil.Clear();
+
+            ManagedMonoBehaviour.DestroyAll();
         }
     }
 }

@@ -46,7 +46,13 @@ namespace Software10101.DOTS.MonoBehaviours {
         internal virtual void Destroy() {
             _destroyed = true;
             Instances.Remove(this);
-            Object.Destroy(gameObject);
+            Destroy(gameObject);
+        }
+
+        internal static void DestroyAll() {
+            while (Instances.Count > 0) {
+                Instances[Instances.Count - 1].Destroy();
+            }
         }
     }
 }
