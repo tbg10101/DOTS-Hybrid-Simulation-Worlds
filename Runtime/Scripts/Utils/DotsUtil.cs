@@ -17,6 +17,8 @@ namespace Software10101.DOTS.Utils {
             ReferenceTypeUtil.Clear();
 
             ManagedMonoBehaviour.DestroyAll();
+
+            TimeUtil.TimeOffset = 0;
         }
     }
 }
