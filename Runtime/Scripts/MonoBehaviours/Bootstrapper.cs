@@ -117,13 +117,17 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _archetypeProducers[prefabIndex].Prefab;
         }
 
-        public (Entity, EntityCommandBuffer) Create(ArchetypeProducer archetypeProducer) {
+        public (Entity, EntityCommandBuffer) Create(
+            ArchetypeProducer archetypeProducer,
+            CreationBufferToken creationBufferToken = null) {
+
             return Create(_archetypeProducerIndices[archetypeProducer]);
         }
 
-        public (Entity, EntityCommandBuffer) Create(int prefabIndex) {
-            EntityCommandBuffer ecb =
-                GetExistingSystem<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>().CreateCommandBuffer();
+        public (Entity, EntityCommandBuffer) Create(int prefabIndex, CreationBufferToken creationBufferToken = null) {
+            EntityCommandBuffer ecb = creationBufferToken?.EntityCommandBuffer
+                                      ?? GetExistingSystem<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>()
+                                          .CreateCommandBuffer();
 
             Entity entity = ecb.CreateEntity(_archetypes[prefabIndex]);
             ecb.AddComponent(entity, new SpawnPrefabComponentData {
@@ -137,6 +141,19 @@ namespace Software10101.DOTS.MonoBehaviours {
             EntityCommandBuffer ecb =
                 GetExistingSystem<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>().CreateCommandBuffer();
             ecb.AddComponent(entity, new DestroyFlagComponentData());
+        }
+
+        public CreationBufferToken GetCreationBufferToken() {
+            return new CreationBufferToken {
+                EntityCommandBuffer =
+                    GetExistingSystem<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>().CreateCommandBuffer()
+            };
+        }
+
+        public class CreationBufferToken {
+            internal EntityCommandBuffer EntityCommandBuffer;
+
+            internal CreationBufferToken() { }
         }
     }
 }
