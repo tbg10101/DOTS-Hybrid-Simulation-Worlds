@@ -121,7 +121,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             ArchetypeProducer archetypeProducer,
             CreationBufferToken creationBufferToken = null) {
 
-            return Create(_archetypeProducerIndices[archetypeProducer]);
+            return Create(_archetypeProducerIndices[archetypeProducer], creationBufferToken);
         }
 
         public (Entity, EntityCommandBuffer) Create(int prefabIndex, CreationBufferToken creationBufferToken = null) {
