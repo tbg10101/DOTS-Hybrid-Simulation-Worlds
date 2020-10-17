@@ -36,7 +36,7 @@ namespace Software10101.DOTS.Systems.Groups {
         public bool IsFixedSize => ((IList)_mutableSystemsList).IsFixedSize;
         public bool IsReadOnly => ((ICollection<ComponentSystemBase>)_mutableSystemsList).IsReadOnly;
 
-        public override IEnumerable<ComponentSystemBase> Systems => _systems;
+        public override IReadOnlyList<ComponentSystemBase> Systems => _systems;
 
         protected override void OnCreate() {
             _underlyingSystemsToUpdate = (List<ComponentSystemBase>)UnderlyingSystemsToUpdateField.GetValue(this);
@@ -61,10 +61,10 @@ namespace Software10101.DOTS.Systems.Groups {
                 _systems = _mutableSystemsList.ToArray();
             }
 
-            if (UpdateCallback == null) {
+            if (FixedRateManager == null) {
                 UpdateAllSystems();
             } else {
-                while (UpdateCallback(this)) {
+                while (FixedRateManager.ShouldGroupUpdate(this)) {
                     UpdateAllSystems();
                 }
             }
