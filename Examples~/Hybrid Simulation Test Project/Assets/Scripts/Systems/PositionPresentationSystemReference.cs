@@ -1,5 +1,6 @@
 using Software10101.DOTS.Example.Data;
 using Software10101.DOTS.MonoBehaviours;
+using Software10101.DOTS.Systems;
 using Software10101.DOTS.Utils;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -18,6 +19,8 @@ namespace Software10101.DOTS.Example.Systems {
                     component.PresentationValue = math.lerp(component.PreviousValue, component.NextValue, presentationFraction);
                 })
                 .ScheduleParallel();
+            
+            Dependency.CompleteBeforeManagedMonoBehaviourUpdates();
         }
     }
 }
