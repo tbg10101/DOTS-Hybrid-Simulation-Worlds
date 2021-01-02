@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using UnityEngine;
 
@@ -26,7 +27,23 @@ namespace Software10101.DOTS.Systems.Groups {
             "m_systemsToRemove",
             BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private ComponentSystemBase[] _systems = new ComponentSystemBase[0];
+        private static readonly FieldInfo MasterUpdateListField = typeof(ComponentSystemGroup).GetField(
+            "m_MasterUpdateList",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        private static readonly Type UpdateIndexType = typeof(ComponentSystemGroup).Assembly.GetType("Unity.Entities.UpdateIndex");
+        private static readonly Type UnsafeListOfUpdateIndexType = typeof(UnsafeList<>).MakeGenericType(UpdateIndexType);
+
+        private static readonly MethodInfo UnsafeListOfUpdateIndexClearMethod = UnsafeListOfUpdateIndexType
+            .GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+        private static readonly MethodInfo UnsafeListOfUpdateIndexSetCapacityMethod = UnsafeListOfUpdateIndexType
+            .GetMethod("SetCapacity", BindingFlags.Instance | BindingFlags.Public);
+        private static readonly MethodInfo UnsafeListOfUpdateIndexAddMethod = UnsafeListOfUpdateIndexType
+            .GetMethod("Add", BindingFlags.Instance | BindingFlags.Public);
+
+        private static readonly ConstructorInfo UpdateIndexConstructor = UpdateIndexType.GetConstructor(new[] {typeof(int), typeof(bool)});
+
+        private readonly List<ComponentSystemBase> _systems = new List<ComponentSystemBase>();
         private readonly List<ComponentSystemBase> _mutableSystemsList = new List<ComponentSystemBase>();
         private bool _systemsListDirtyFlag = false;
 
@@ -39,6 +56,8 @@ namespace Software10101.DOTS.Systems.Groups {
         public override IReadOnlyList<ComponentSystemBase> Systems => _systems;
 
         protected override void OnCreate() {
+            base.OnCreate();
+
             _underlyingSystemsToUpdate = (List<ComponentSystemBase>)UnderlyingSystemsToUpdateField.GetValue(this);
             _underlyingSystemsToRemove = (List<ComponentSystemBase>)UnderlyingSystemsToRemoveField.GetValue(this);
         }
@@ -58,7 +77,22 @@ namespace Software10101.DOTS.Systems.Groups {
 
             if (_systemsListDirtyFlag) {
                 _systemsListDirtyFlag = false;
-                _systems = _mutableSystemsList.ToArray();
+                _systems.Clear();
+                _systems.AddRange(_mutableSystemsList);
+
+                // this icky stuff is because the entity debugger only really wants to work with the default group class
+                #region EntityDebuggerWorkarounds
+                    object o = MasterUpdateListField.GetValue(this);
+                    UnsafeListOfUpdateIndexClearMethod.Invoke(o, null);
+                    UnsafeListOfUpdateIndexSetCapacityMethod.Invoke(o, new object[] {_systems.Count});
+
+                    for (int i = 0; i < _systems.Count; i++) {
+                        object obj = UpdateIndexConstructor.Invoke(new object[] {i, true});
+                        UnsafeListOfUpdateIndexAddMethod.Invoke(o, new [] {obj});
+                    }
+
+                    MasterUpdateListField.SetValue(this, o);
+                #endregion
             }
 
             if (FixedRateManager == null) {
@@ -71,7 +105,7 @@ namespace Software10101.DOTS.Systems.Groups {
         }
 
         private void UpdateAllSystems() {
-            int count = _systems.Length;
+            int count = _systems.Count;
             int index;
 
             for (index = 0; index < count; index++) {

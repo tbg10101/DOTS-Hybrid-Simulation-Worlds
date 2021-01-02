@@ -397,9 +397,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2edfc5aa963d22c4e8ea8e4795d2d3e8, type: 2}
   _simulationSystems:
   - {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
-  _presentationSystems:
+  _presentationPreUpdateSystems:
   - {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
-  EntitiesToGenerate: 10000
+  _presentationPostUpdateSystems: []
+  EntitiesToGenerate: 1000
   SpeedMultiplier: 1
 --- !u!114 &899697412
 MonoBehaviour:
@@ -489,6 +490,7 @@ Light:
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &993198347
@@ -565,6 +567,7 @@ MonoBehaviour:
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
+  m_AllowXRRendering: 1
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
