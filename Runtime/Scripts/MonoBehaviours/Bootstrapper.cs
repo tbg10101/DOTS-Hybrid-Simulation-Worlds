@@ -40,7 +40,11 @@ namespace Software10101.DOTS.MonoBehaviours {
         private readonly Dictionary<ArchetypeProducer, int> _archetypeProducerIndices = new Dictionary<ArchetypeProducer, int>();
 
         [SerializeField]
-        private SystemTypeReference[] _simulationSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _simulationResetSystems = new SystemTypeReference[0];
+
+        [FormerlySerializedAs("_simulationSystems")]
+        [SerializeField]
+        private SystemTypeReference[] _mainSimulationSystems = new SystemTypeReference[0];
 
         [FormerlySerializedAs("_presentationSystems")]
         [SerializeField]
@@ -55,9 +59,20 @@ namespace Software10101.DOTS.MonoBehaviours {
             {
                 AddSystem(simGroup, new SimulationDestroySystem());
 
+                SimulationResetSystemGroup simResetGroup = AddSystem(simGroup, new SimulationResetSystemGroup());
+                {
+                    foreach (SystemTypeReference systemTypeReference in _simulationResetSystems) {
+                        GetOrCreateSystem(simResetGroup, systemTypeReference.SystemType);
+                    }
+                }
+
                 AddSystem(simGroup, new PreSimulationEntityCommandBufferSystem());
-                foreach (SystemTypeReference systemTypeReference in _simulationSystems) {
-                    GetOrCreateSystem(simGroup, systemTypeReference.SystemType);
+
+                SimulationMainSystemGroup simMainGroup = AddSystem(simGroup, new SimulationMainSystemGroup());
+                {
+                    foreach (SystemTypeReference systemTypeReference in _mainSimulationSystems) {
+                        GetOrCreateSystem(simMainGroup, systemTypeReference.SystemType);
+                    }
                 }
 
                 AddSystem(simGroup, new PostSimulationEntityCommandBufferSystem());
@@ -71,8 +86,10 @@ namespace Software10101.DOTS.MonoBehaviours {
                 AddSystem(presGroup, new PrePresentationEntityCommandBufferSystem());
 
                 PresentationPreUpdateSystemGroup presPreUpdateGroup = AddSystem(presGroup, new PresentationPreUpdateSystemGroup());
-                foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
-                    GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
+                {
+                    foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
+                        GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
+                    }
                 }
 
                 AddSystem(presGroup, new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem());
@@ -80,8 +97,10 @@ namespace Software10101.DOTS.MonoBehaviours {
                 AddSystem(presGroup, new PostManagedMonoBehaviourUpdateEntityCommandBufferSystem());
 
                 PresentationPostUpdateSystemGroup presPostUpdateGroup = AddSystem(presGroup, new PresentationPostUpdateSystemGroup());
-                foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
-                    GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
+                {
+                    foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
+                        GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
+                    }
                 }
 
                 AddSystem(presGroup, new PostPresentationEntityCommandBufferSystem());
