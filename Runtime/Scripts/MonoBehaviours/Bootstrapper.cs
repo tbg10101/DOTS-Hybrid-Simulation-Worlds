@@ -39,19 +39,27 @@ namespace Software10101.DOTS.MonoBehaviours {
         private readonly List<EntityArchetype> _archetypes = new List<EntityArchetype>();
         private readonly Dictionary<ArchetypeProducer, int> _archetypeProducerIndices = new Dictionary<ArchetypeProducer, int>();
 
+        [Tooltip("Systems that execute before each simulation tick. (executed 0-n times per frame)")]
         [SerializeField]
         private SystemTypeReference[] _simulationResetSystems = new SystemTypeReference[0];
 
+        [Tooltip("Systems that execute during each simulation tick. (executed 0-n times per frame)")]
         [FormerlySerializedAs("_simulationSystems")]
         [SerializeField]
         private SystemTypeReference[] _mainSimulationSystems = new SystemTypeReference[0];
 
+        [Tooltip("Systems that execute before the ManagedMonoBehaviours. (executed once per frame)")]
         [FormerlySerializedAs("_presentationSystems")]
         [SerializeField]
         private SystemTypeReference[] _presentationPreUpdateSystems = new SystemTypeReference[0];
 
+        [Tooltip("Systems that execute after the ManagedMonoBehaviours. (executed once per frame)")]
         [SerializeField]
         private SystemTypeReference[] _presentationPostUpdateSystems = new SystemTypeReference[0];
+
+        [Tooltip("Systems that execute at the end of each frame. Useful for systems that serialize the world. (executed once per frame)")]
+        [SerializeField]
+        private SystemTypeReference[] _endOfFrameSystems = new SystemTypeReference[0];
 
         protected virtual void Start() {
             // set up simulation systems
@@ -109,6 +117,13 @@ namespace Software10101.DOTS.MonoBehaviours {
                 AddSystem(presGroup, new PrefabSpawnSystem(this));
 
                 AddSystem(presGroup, new EndOfFrameEntityCommandBufferSystem());
+
+                EndOfFrameSystemGroup endOfFrameGroup = AddSystem(presGroup, new EndOfFrameSystemGroup());
+                {
+                    foreach (SystemTypeReference systemTypeReference in _endOfFrameSystems) {
+                        GetOrCreateSystem(endOfFrameGroup, systemTypeReference.SystemType);
+                    }
+                }
             }
 
             // set up archetypes
