@@ -9,8 +9,7 @@ namespace Software10101.DOTS.Utils {
         public static void Reset() {
             World.DisposeAllWorlds();
 
-            WordStorage.Instance.Dispose();
-            WordStorage.Instance = null;
+            WordStorage.Clear();
 
             PlayerLoopUtil.ResetPlayerLoop();
 
