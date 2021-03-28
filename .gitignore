@@ -1,12 +1,12 @@
 # =============== #
 # Unity generated #
 # =============== #
-/Examples~/Hybrid Simulation Test Project/Library
-/Examples~/Hybrid Simulation Test Project/Logs
-/Examples~/Hybrid Simulation Test Project/Obj
-/Examples~/Hybrid Simulation Test Project/Temp
-/Examples~/Hybrid Simulation Test Project/UnityGenerated
-/Examples~/Hybrid Simulation Test Project/UserSettings
+/Examples~/*/Library
+/Examples~/*/Logs
+/Examples~/*/obj
+/Examples~/*/Temp
+/Examples~/*/UnityGenerated
+/Examples~/*/UserSettings
 
 *.sln
 *.csproj
