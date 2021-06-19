@@ -5,11 +5,11 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.entities": "0.17.0-preview.41"
+        "com.unity.entities": "0.17.0-preview.42"
       }
     },
     "com.unity.burst": {
-      "version": "1.4.1",
+      "version": "1.5.4",
       "depth": 2,
       "source": "registry",
       "dependencies": {
@@ -28,7 +28,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.entities": {
-      "version": "0.17.0-preview.41",
+      "version": "0.17.0-preview.42",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -48,16 +48,18 @@
     },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
-      "depth": 4,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.5",
+      "version": "3.0.7",
       "depth": 0,
       "source": "registry",
-      "dependencies": {},
+      "dependencies": {
+        "com.unity.ext.nunit": "1.0.6"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.inputsystem": {
@@ -189,7 +191,7 @@
       }
     },
     "com.unity.test-framework": {
-      "version": "1.1.22",
+      "version": "1.1.24",
       "depth": 3,
       "source": "registry",
       "dependencies": {

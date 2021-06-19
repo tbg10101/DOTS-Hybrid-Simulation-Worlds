@@ -1,11 +1,11 @@
 {
   "name": "com.10101software.dots.hybridsimulation",
   "description": "A framework for using FixedUpdate in a simulation world which is linked to a GameObject-based presentation layer.",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "unity": "2020.2",
   "displayName": "DOTS Hybrid Simulation Worlds",
   "dependencies": {
-    "com.unity.entities": "0.17.0-preview.41"
+    "com.unity.entities": "0.17.0-preview.42"
   },
   "repository": {
     "type": "git",
