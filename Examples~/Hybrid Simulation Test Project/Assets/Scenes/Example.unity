@@ -497,9 +497,9 @@ MonoBehaviour:
   _simulationResetSystems: []
   _mainSimulationSystems:
   - {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
-  - {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
   _presentationPreUpdateSystems:
   - {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
+  - {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
   _presentationPostUpdateSystems: []
   _endOfFrameSystems: []
   EntitiesToGenerate: 2000
@@ -665,7 +665,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 0
-  m_Antialiasing: 1
+  m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0

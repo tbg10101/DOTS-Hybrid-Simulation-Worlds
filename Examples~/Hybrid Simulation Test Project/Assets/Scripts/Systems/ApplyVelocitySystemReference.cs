@@ -8,7 +8,8 @@ namespace Software10101.DOTS.Example.Systems {
     [CreateAssetMenu(menuName = "Systems/" + nameof(ApplyVelocitySystem))]
     public class ApplyVelocitySystemReference : SystemTypeReference<ApplyVelocitySystem> { }
 
-    public class ApplyVelocitySystem : SystemBase {
+    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    public partial class ApplyVelocitySystem : SystemBase {
         protected override void OnUpdate() {
             float dt = TimeUtil.FixedDeltaTime;
 

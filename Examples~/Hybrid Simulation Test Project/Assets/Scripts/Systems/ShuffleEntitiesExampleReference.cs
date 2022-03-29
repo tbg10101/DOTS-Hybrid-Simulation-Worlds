@@ -10,12 +10,10 @@ namespace Software10101.DOTS.Example.Systems {
     [CreateAssetMenu(menuName = "Systems/" + nameof(ShuffleEntitiesExampleSystem))]
     public class ShuffleEntitiesExampleReference : SystemTypeReference<ShuffleEntitiesExampleSystem> { }
 
-    public class ShuffleEntitiesExampleSystem : SystemBase {
+    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    public partial class ShuffleEntitiesExampleSystem : SystemBase {
         protected override void OnUpdate() {
-            // encapsulate the random
-            NativeSingleton<Random> random = new NativeSingleton<Random>(
-                new Random(Convert.ToUInt32(new System.Random().Next())),
-                Allocator.TempJob);
+            Random r = new Random(Convert.ToUInt32(new System.Random().Next()));
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // get entities with position
@@ -33,18 +31,13 @@ namespace Software10101.DOTS.Example.Systems {
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             Job
                 .WithCode(() => {
-                    Random r = random.GetValue();
-
                     // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#Modern_method
                     for (int i = entitiesWithPosition.Length - 1; i >= 1; i--) {
                         int j = r.NextInt(0, i + 1); // max is not inclusive
                         (entitiesWithPosition[i], entitiesWithPosition[j]) =
                             (entitiesWithPosition[j], entitiesWithPosition[i]);
                     }
-
-                    random.SetValue(r);
                 })
-                .WithDisposeOnCompletion(random)
                 .Schedule();
             
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,11 +45,12 @@ namespace Software10101.DOTS.Example.Systems {
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             Job
                 .WithCode(() => {
-                    int length = entitiesWithPosition.Length;
-                    
-                    for (int i = 0; i < length; i++) {
-                        Entity e = entitiesWithPosition[i];
+                    if (entitiesWithPosition.IsEmpty) {
+                        return;
                     }
+                    
+                    int index = entitiesWithPosition[0].Index;
+                    Debug.Log($"Initial shuffled entity index: {index}");
                 })
                 .WithDisposeOnCompletion(entitiesWithPosition)
                 .Schedule();

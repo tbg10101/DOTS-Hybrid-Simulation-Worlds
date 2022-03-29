@@ -3,7 +3,8 @@ using Software10101.DOTS.MonoBehaviours;
 using Unity.Entities;
 
 namespace Software10101.DOTS.Systems {
-    internal sealed class PresentationDestroySystem : SystemBase {
+    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    internal partial class PresentationDestroySystem : SystemBase {
         protected override void OnUpdate() {
             Entities
                 .WithoutBurst()

@@ -95,10 +95,10 @@ namespace Software10101.DOTS.Systems.Groups {
                 #endregion
             }
 
-            if (FixedRateManager == null) {
+            if (RateManager == null) {
                 UpdateAllSystems();
             } else {
-                while (FixedRateManager.ShouldGroupUpdate(this)) {
+                while (RateManager.ShouldGroupUpdate(this)) {
                     UpdateAllSystems();
                 }
             }

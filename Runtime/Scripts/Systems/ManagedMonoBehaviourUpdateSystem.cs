@@ -5,7 +5,8 @@ using Unity.Entities;
 using Unity.Jobs;
 
 namespace Software10101.DOTS.Systems {
-    internal sealed class ManagedMonoBehaviourUpdateSystem : SystemBase {
+    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    internal partial class ManagedMonoBehaviourUpdateSystem : SystemBase {
         protected override void OnUpdate() {
             JobHandleExtensions.CompleteJobList();
             ManagedMonoBehaviour.DoUpdate();

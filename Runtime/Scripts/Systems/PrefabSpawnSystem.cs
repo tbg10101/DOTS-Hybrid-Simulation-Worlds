@@ -5,8 +5,9 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace Software10101.DOTS.Systems {
+    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
     [DisableAutoCreation]
-    internal sealed class PrefabSpawnSystem : SystemBase {
+    internal partial class PrefabSpawnSystem : SystemBase {
         private readonly Bootstrapper _bootstrapper;
 
         public PrefabSpawnSystem(Bootstrapper bootstrapper) {

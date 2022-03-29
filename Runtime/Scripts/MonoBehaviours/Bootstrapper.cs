@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Software10101.DOTS.Archetypes;
 using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
@@ -8,8 +9,6 @@ using Unity.Entities;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 using UnityEngine.Serialization;
-using PresentationSystemGroup = Software10101.DOTS.Systems.Groups.PresentationSystemGroup;
-using SimulationSystemGroup = Software10101.DOTS.Systems.Groups.SimulationSystemGroup;
 
 namespace Software10101.DOTS.MonoBehaviours {
     /// <summary>
@@ -41,27 +40,31 @@ namespace Software10101.DOTS.MonoBehaviours {
 
         [Tooltip("Systems that execute before each simulation tick. (executed 0-n times per frame)")]
         [SerializeField]
-        private SystemTypeReference[] _simulationResetSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _simulationResetSystems = Array.Empty<SystemTypeReference>();
 
         [Tooltip("Systems that execute during each simulation tick. (executed 0-n times per frame)")]
         [FormerlySerializedAs("_simulationSystems")]
         [SerializeField]
-        private SystemTypeReference[] _mainSimulationSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _mainSimulationSystems = Array.Empty<SystemTypeReference>();
 
         [Tooltip("Systems that execute before the ManagedMonoBehaviours. (executed once per frame)")]
         [FormerlySerializedAs("_presentationSystems")]
         [SerializeField]
-        private SystemTypeReference[] _presentationPreUpdateSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _presentationPreUpdateSystems = Array.Empty<SystemTypeReference>();
 
         [Tooltip("Systems that execute after the ManagedMonoBehaviours. (executed once per frame)")]
         [SerializeField]
-        private SystemTypeReference[] _presentationPostUpdateSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _presentationPostUpdateSystems = Array.Empty<SystemTypeReference>();
 
         [Tooltip("Systems that execute at the end of each frame. Useful for systems that serialize the world. (executed once per frame)")]
         [SerializeField]
-        private SystemTypeReference[] _endOfFrameSystems = new SystemTypeReference[0];
+        private SystemTypeReference[] _endOfFrameSystems = Array.Empty<SystemTypeReference>();
 
         protected virtual void Start() {
+            // set up initialization group
+            // ReSharper disable once UnusedVariable // not used by the bootstrapper but is one of Unity's root system groups
+            InitializationSystemGroup initGroup = AddSystem(typeof(Initialization), new InitializationSystemGroup());
+            
             // set up simulation systems
             SimulationSystemGroup simGroup = AddSystem(typeof(FixedUpdate), new SimulationSystemGroup());
             {
