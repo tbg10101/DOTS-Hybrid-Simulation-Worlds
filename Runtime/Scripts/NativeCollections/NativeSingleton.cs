@@ -12,7 +12,7 @@ namespace Unity.Collections
     public interface INativeReadOnlySingleton<T> where T : struct {
         T GetValue();
     }
-    
+
     /// <summary>
     /// Structured very similarly to NativeList but it only stores one element.
     /// </summary>
@@ -59,7 +59,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
-            
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
@@ -133,7 +133,7 @@ namespace Unity.Collections
 
             AtomicSafetyHandle.Release(m_Safety);
 #else
-            var jobHandle = new NativeSingletonDisposeJob { Data = new NativeListDispose { m_ListData = m_ListData } }.Schedule(inputDeps);
+            var jobHandle = new NativeSingletonDisposeJob { Data = new NativeSingletonDispose { m_ListData = m_ListData } }.Schedule(inputDeps);
 #endif
             m_ListData = null;
 
