@@ -18,10 +18,9 @@ namespace Software10101.DOTS.Utils {
             .GetMethod("TriggerUpdate", BindingFlags.Public | BindingFlags.Instance);
 
         /// <summary>
-        /// Adds a system to the player loop in the same way that
-        /// <see cref="Unity.Entities.ScriptBehaviourUpdateOrder.UpdatePlayerLoop"/> does.
+        /// Adds a system to the player loop in the same way that <see cref="Unity.Entities.ScriptBehaviourUpdateOrder"/> does.
         ///
-        /// One difference is that this does not check to see oif the system is already added. It is up to the users of this
+        /// One difference is that this does not check to see if the system is already added. It is up to the users of this
         /// method to ensure that they do not add systems multiple times.
         /// </summary>
         /// <param name="parent">

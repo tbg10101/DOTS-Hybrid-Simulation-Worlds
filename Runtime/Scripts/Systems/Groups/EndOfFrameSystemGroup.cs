@@ -1,3 +1,5 @@
+using Unity.Entities;
+
 namespace Software10101.DOTS.Systems.Groups {
-    internal sealed class EndOfFrameSystemGroup : ListComponentSystemGroup { }
+    internal sealed class EndOfFrameSystemGroup : ComponentSystemGroup { }
 }

@@ -11,6 +11,7 @@ namespace Software10101.DOTS.Systems.Groups {
     /// <summary>
     /// Component system group that acts like a List. Not compatible with unmanaged systems.
     /// </summary>
+    [Obsolete]
     public abstract class ListComponentSystemGroup :
         ComponentSystemGroup,
         IList<ComponentSystemBase>,

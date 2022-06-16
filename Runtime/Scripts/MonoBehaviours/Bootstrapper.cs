@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
 using Software10101.DOTS.Archetypes;
 using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
@@ -64,13 +66,16 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up initialization group
             // ReSharper disable once UnusedVariable // not used by the bootstrapper but is one of Unity's root system groups
             InitializationSystemGroup initGroup = AddSystem(typeof(Initialization), new InitializationSystemGroup());
-            
+            SetSystemSortingEnabled(initGroup, false);
+
             // set up simulation systems
             SimulationSystemGroup simGroup = AddSystem(typeof(FixedUpdate), new SimulationSystemGroup());
+            SetSystemSortingEnabled(simGroup, false);
             {
                 AddSystem(simGroup, new SimulationDestroySystem());
 
                 SimulationResetSystemGroup simResetGroup = AddSystem(simGroup, new SimulationResetSystemGroup());
+                SetSystemSortingEnabled(simResetGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _simulationResetSystems) {
                         GetOrCreateSystem(simResetGroup, systemTypeReference.SystemType);
@@ -80,6 +85,7 @@ namespace Software10101.DOTS.MonoBehaviours {
                 AddSystem(simGroup, new PreSimulationEntityCommandBufferSystem());
 
                 SimulationMainSystemGroup simMainGroup = AddSystem(simGroup, new SimulationMainSystemGroup());
+                SetSystemSortingEnabled(simMainGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _mainSimulationSystems) {
                         GetOrCreateSystem(simMainGroup, systemTypeReference.SystemType);
@@ -93,10 +99,12 @@ namespace Software10101.DOTS.MonoBehaviours {
 
             // set up presentation systems
             PresentationSystemGroup presGroup = AddSystem(typeof(Update), new PresentationSystemGroup());
+            SetSystemSortingEnabled(presGroup, false);
             {
                 AddSystem(presGroup, new PrePresentationEntityCommandBufferSystem());
 
                 PresentationPreUpdateSystemGroup presPreUpdateGroup = AddSystem(presGroup, new PresentationPreUpdateSystemGroup());
+                SetSystemSortingEnabled(presPreUpdateGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
                         GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
@@ -108,6 +116,7 @@ namespace Software10101.DOTS.MonoBehaviours {
                 AddSystem(presGroup, new PostManagedMonoBehaviourUpdateEntityCommandBufferSystem());
 
                 PresentationPostUpdateSystemGroup presPostUpdateGroup = AddSystem(presGroup, new PresentationPostUpdateSystemGroup());
+                SetSystemSortingEnabled(presPostUpdateGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
                         GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
@@ -122,6 +131,7 @@ namespace Software10101.DOTS.MonoBehaviours {
                 AddSystem(presGroup, new EndOfFrameEntityCommandBufferSystem());
 
                 EndOfFrameSystemGroup endOfFrameGroup = AddSystem(presGroup, new EndOfFrameSystemGroup());
+                SetSystemSortingEnabled(endOfFrameGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _endOfFrameSystems) {
                         GetOrCreateSystem(endOfFrameGroup, systemTypeReference.SystemType);
@@ -191,6 +201,27 @@ namespace Software10101.DOTS.MonoBehaviours {
             internal EntityCommandBuffer EntityCommandBuffer;
 
             internal CreationBufferToken() { }
+        }
+
+        /// <summary>
+        /// This reflection helper needed because the setter on <see cref="ComponentSystemGroup.EnableSystemSorting"/> is
+        /// protected.
+        /// </summary>
+        private static void SetSystemSortingEnabled(ComponentSystemGroup group, bool enabled) {
+            const string propertyName = "EnableSystemSorting";
+
+            PropertyInfo enableSystemSortingPropertyInfo = group.GetType()
+                .GetProperty(propertyName)!
+                .DeclaringType!
+                .GetProperty(propertyName);
+
+            enableSystemSortingPropertyInfo!.SetValue(
+                group,
+                enabled,
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                null,
+                CultureInfo.CurrentCulture);
         }
     }
 }
