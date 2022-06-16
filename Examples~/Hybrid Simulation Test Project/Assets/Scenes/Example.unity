@@ -500,7 +500,8 @@ MonoBehaviour:
   _presentationPreUpdateSystems:
   - {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
   - {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
-  _presentationPostUpdateSystems: []
+  _presentationPostUpdateSystems:
+  - {fileID: 11400000, guid: e01661ff769361b4b937408c043acd78, type: 2}
   _endOfFrameSystems: []
   EntitiesToGenerate: 2000
   SpeedMultiplier: 1

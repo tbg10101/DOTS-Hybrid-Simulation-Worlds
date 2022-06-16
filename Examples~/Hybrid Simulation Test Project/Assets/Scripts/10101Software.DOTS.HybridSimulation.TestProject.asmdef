@@ -1,6 +1,6 @@
 {
     "name": "10101Software.DOTS.HybridSimulation.TestProject",
-    "rootNamespace": "",
+    "rootNamespace": "Software10101.DOTS.Example",
     "references": [
         "GUID:852fdcd981c08e249a237d901a75e290",
         "GUID:734d92eba21c94caba915361bd5ac177",
