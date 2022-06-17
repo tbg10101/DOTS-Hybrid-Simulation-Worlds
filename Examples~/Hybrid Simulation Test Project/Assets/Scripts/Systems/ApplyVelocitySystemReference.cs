@@ -9,6 +9,7 @@ namespace Software10101.DOTS.Example.Systems {
     public class ApplyVelocitySystemReference : SystemTypeReference<ApplyVelocitySystem> { }
 
     // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    // ReSharper disable once RedundantExtendsListEntry
     public partial class ApplyVelocitySystem : SystemBase {
         protected override void OnUpdate() {
             float dt = TimeUtil.FixedDeltaTime;

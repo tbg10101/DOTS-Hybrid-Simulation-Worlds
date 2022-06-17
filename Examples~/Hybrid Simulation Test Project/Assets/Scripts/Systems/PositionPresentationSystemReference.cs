@@ -11,6 +11,7 @@ namespace Software10101.DOTS.Example.Systems {
     public class PositionPresentationSystemReference : SystemTypeReference<PositionPresentationSystem> { }
 
     // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    // ReSharper disable once RedundantExtendsListEntry
     public partial class PositionPresentationSystem : SystemBase {
         protected override void OnUpdate() {
             float presentationFraction = TimeUtil.PresentationTimeFraction; // this is done just once instead of once per instance
@@ -20,7 +21,7 @@ namespace Software10101.DOTS.Example.Systems {
                     component.PresentationValue = math.lerp(component.PreviousValue, component.NextValue, presentationFraction);
                 })
                 .ScheduleParallel();
-            
+
             Dependency.CompleteBeforeManagedMonoBehaviourUpdates();
         }
     }

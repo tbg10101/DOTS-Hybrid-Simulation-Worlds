@@ -9,6 +9,7 @@ namespace Software10101.DOTS.Example.Systems {
     public class SharedValueSystemReference : SystemTypeReference<SharedValueSystem> { }
 
     // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    // ReSharper disable once RedundantExtendsListEntry
     public partial class SharedValueSystem : SystemBase {
         protected override void OnUpdate() {
             NativeReference<int> nativeReference = new NativeReference<int>(0, Allocator.TempJob);
