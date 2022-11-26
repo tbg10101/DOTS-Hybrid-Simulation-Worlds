@@ -36,6 +36,10 @@ namespace Software10101.DOTS.MonoBehaviours {
             return _world.GetOrCreateSystem<T>(group);
         }
 
+        internal ReferenceCreatedSystemBase GetOrCreateSystemInternal(ComponentSystemGroup group, Type systemType) {
+            return _world.GetOrCreateSystemInternal(group, systemType);
+        }
+
         public ComponentSystemBase GetOrCreateSystem(ComponentSystemGroup group, Type systemType) {
             return _world.GetOrCreateSystem(group, systemType);
         }
@@ -97,6 +101,14 @@ namespace Software10101.DOTS.MonoBehaviours {
 
         public ComponentSystemBase GetOrCreateSystem(ComponentSystemGroup group, Type systemType) {
             ComponentSystemBase system = _world.GetOrCreateSystem(systemType);
+
+            AddSystemToGroup(group, system);
+
+            return system;
+        }
+
+        internal ReferenceCreatedSystemBase GetOrCreateSystemInternal(ComponentSystemGroup group, Type systemType) {
+            ReferenceCreatedSystemBase system = _world.GetOrCreateSystem(systemType) as ReferenceCreatedSystemBase;
 
             AddSystemToGroup(group, system);
 

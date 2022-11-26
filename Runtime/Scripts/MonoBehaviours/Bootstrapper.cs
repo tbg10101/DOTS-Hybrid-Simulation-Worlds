@@ -78,7 +78,8 @@ namespace Software10101.DOTS.MonoBehaviours {
                 SetSystemSortingEnabled(simResetGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _simulationResetSystems) {
-                        GetOrCreateSystem(simResetGroup, systemTypeReference.SystemType);
+                        GetOrCreateSystemInternal(simResetGroup, systemTypeReference.SystemType)
+                            .SetCreator(systemTypeReference);
                     }
                 }
 
@@ -88,7 +89,8 @@ namespace Software10101.DOTS.MonoBehaviours {
                 SetSystemSortingEnabled(simMainGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _mainSimulationSystems) {
-                        GetOrCreateSystem(simMainGroup, systemTypeReference.SystemType);
+                        GetOrCreateSystemInternal(simMainGroup, systemTypeReference.SystemType)
+                            .SetCreator(systemTypeReference);
                     }
                 }
 
@@ -107,7 +109,8 @@ namespace Software10101.DOTS.MonoBehaviours {
                 SetSystemSortingEnabled(presPreUpdateGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateSystems) {
-                        GetOrCreateSystem(presPreUpdateGroup, systemTypeReference.SystemType);
+                        GetOrCreateSystemInternal(presPreUpdateGroup, systemTypeReference.SystemType)
+                            .SetCreator(systemTypeReference);
                     }
                 }
 
@@ -119,7 +122,8 @@ namespace Software10101.DOTS.MonoBehaviours {
                 SetSystemSortingEnabled(presPostUpdateGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateSystems) {
-                        GetOrCreateSystem(presPostUpdateGroup, systemTypeReference.SystemType);
+                        GetOrCreateSystemInternal(presPostUpdateGroup, systemTypeReference.SystemType)
+                            .SetCreator(systemTypeReference);
                     }
                 }
 
@@ -134,7 +138,8 @@ namespace Software10101.DOTS.MonoBehaviours {
                 SetSystemSortingEnabled(endOfFrameGroup, false);
                 {
                     foreach (SystemTypeReference systemTypeReference in _endOfFrameSystems) {
-                        GetOrCreateSystem(endOfFrameGroup, systemTypeReference.SystemType);
+                        GetOrCreateSystemInternal(endOfFrameGroup, systemTypeReference.SystemType)
+                            .SetCreator(systemTypeReference);
                     }
                 }
             }

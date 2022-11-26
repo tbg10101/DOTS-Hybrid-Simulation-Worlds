@@ -12,7 +12,7 @@ namespace Software10101.DOTS.Example.Systems {
 
     // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
     // ReSharper disable once RedundantExtendsListEntry
-    public partial class PositionPresentationSystem : SystemBase {
+    public partial class PositionPresentationSystem : ReferenceCreatedSystemBase<PositionPresentationSystemReference> {
         protected override void OnUpdate() {
             float presentationFraction = TimeUtil.PresentationTimeFraction; // this is done just once instead of once per instance
 

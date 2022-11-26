@@ -12,7 +12,7 @@ namespace Software10101.DOTS.Example.Systems {
 
     // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
     // ReSharper disable once RedundantExtendsListEntry
-    public partial class ShuffleEntitiesExampleSystem : SystemBase {
+    public partial class ShuffleEntitiesExampleSystem : ReferenceCreatedSystemBase<ShuffleEntitiesExampleReference> {
         protected override void OnUpdate() {
             Random r = new Random(Convert.ToUInt32(new System.Random().Next()));
 
