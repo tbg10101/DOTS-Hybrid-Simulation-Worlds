@@ -1,9 +1,11 @@
 using Software10101.DOTS.Data;
 using Software10101.DOTS.MonoBehaviours;
+using Software10101.DOTS.Systems.EntityCommandBufferSystems;
 using Unity.Entities;
 
 namespace Software10101.DOTS.Systems {
-    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(PostPresentationEntityCommandBufferSystem))]
     internal partial class PresentationDestroySystem : SystemBase {
         protected override void OnUpdate() {
             Entities

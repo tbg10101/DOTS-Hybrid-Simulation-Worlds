@@ -8,7 +8,7 @@ using UnityEngine.Profiling;
 
 namespace Software10101.DOTS.MonoBehaviours {
     public abstract class EntityMonoBehaviour : ManagedMonoBehaviour {
-        private static readonly Dictionary<Entity, EntityMonoBehaviour> Instances = new Dictionary<Entity, EntityMonoBehaviour>();
+        private static readonly Dictionary<Entity, EntityMonoBehaviour> Instances = new();
 
         private Entity _entity = Entity.Null;
         public Entity Entity {
@@ -24,19 +24,19 @@ namespace Software10101.DOTS.MonoBehaviours {
             }
         }
 
-        private Bootstrapper _bootstrapper = null;
-        public Bootstrapper Bootstrapper {
-            protected get => _bootstrapper;
+        private WorldBehaviour _worldBehaviour = null;
+        public WorldBehaviour WorldBehaviour {
+            protected get => _worldBehaviour;
             set {
-                if (_bootstrapper != null) {
+                if (_worldBehaviour != null) {
                     throw new Exception("Cannot set bootstrapper multiple times.");
                 }
 
-                _bootstrapper = value;
+                _worldBehaviour = value;
             }
         }
 
-        protected EntityManager EntityManager => _bootstrapper.EntityManager;
+        protected EntityManager EntityManager => _worldBehaviour.EntityManager;
 
 #if UNITY_EDITOR && ENTITY_NAME_SYNC
         private string _oldName = null;
@@ -68,7 +68,7 @@ namespace Software10101.DOTS.MonoBehaviours {
 
         internal override void Destroy() {
             Entity = Entity.Null;
-            _bootstrapper = null;
+            _worldBehaviour = null;
 
             base.Destroy();
         }

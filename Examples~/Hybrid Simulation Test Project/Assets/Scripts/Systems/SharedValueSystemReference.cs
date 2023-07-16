@@ -12,11 +12,11 @@ namespace Software10101.DOTS.Example.Systems {
     // ReSharper disable once RedundantExtendsListEntry
     public partial class SharedValueSystem : ReferenceCreatedSystemBase<SharedValueSystemReference> {
         protected override void OnUpdate() {
-            NativeReference<int> nativeReference = new NativeReference<int>(0, Allocator.TempJob);
+            NativeReference<int> nativeReference = new(0, Allocator.TempJob);
 
             // do something to populate the value
             Entities
-                .ForEach((in PositionComponentData component) => {
+                .ForEach((in PositionComponentData _) => {
                     nativeReference.Value++;
                 })
                 .Schedule();

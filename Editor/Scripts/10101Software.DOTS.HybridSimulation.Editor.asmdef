@@ -1,0 +1,19 @@
+{
+    "name": "10101Software.DOTS.HybridSimulation.Editor",
+    "rootNamespace": "Software10101.DOTS.Editor",
+    "references": [
+        "GUID:852fdcd981c08e249a237d901a75e290",
+        "GUID:e0cd26848372d4e5c891c569017e11f1"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

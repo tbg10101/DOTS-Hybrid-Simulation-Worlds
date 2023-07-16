@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using Software10101.DOTS.MonoBehaviours;
+using Software10101.DOTS.Systems.EntityCommandBufferSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 
 namespace Software10101.DOTS.Systems {
-    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(PreManagedMonoBehaviourUpdateEntityCommandBufferSystem))]
     internal partial class ManagedMonoBehaviourUpdateSystem : SystemBase {
         protected override void OnUpdate() {
             JobHandleExtensions.CompleteJobList();

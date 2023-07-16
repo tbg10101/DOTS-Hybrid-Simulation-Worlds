@@ -1,5 +1,9 @@
+using Software10101.DOTS.Systems.EntityCommandBufferSystems;
+using Software10101.DOTS.Systems.Groups.Abstract;
 using Unity.Entities;
 
 namespace Software10101.DOTS.Systems.Groups {
-    internal sealed class PresentationPostUpdateSystemGroup : ComponentSystemGroup { }
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(PostManagedMonoBehaviourUpdateEntityCommandBufferSystem))]
+    internal sealed partial class PresentationPostUpdateSystemGroup : GraphSystemGroup { }
 }

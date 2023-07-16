@@ -5,27 +5,28 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace Software10101.DOTS.Systems {
-    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(PresentationDestroySystem))]
     [DisableAutoCreation]
     internal partial class PrefabSpawnSystem : SystemBase {
-        private readonly Bootstrapper _bootstrapper;
+        private readonly WorldBehaviour _worldBehaviour;
 
-        public PrefabSpawnSystem(Bootstrapper bootstrapper) {
-            _bootstrapper = bootstrapper;
+        public PrefabSpawnSystem(WorldBehaviour worldBehaviour) {
+            _worldBehaviour = worldBehaviour;
         }
 
         protected override void OnUpdate() {
-            EntityCommandBuffer ecb = World
-                .GetExistingSystem<EndOfFrameEntityCommandBufferSystem>()
-                .CreateCommandBuffer();
+             EntityCommandBuffer ecb = World
+                 .GetExistingSystemManaged<EndOfFrameEntityCommandBufferSystem>()
+                 .CreateCommandBuffer();
 
-            Entities
-                .WithoutBurst()
-                .ForEach((Entity entity, in SpawnPrefabComponentData initData) => {
-                    EntityMonoBehaviour instance = Object.Instantiate(_bootstrapper.GetPrefab(initData.PrefabIndex));
+             Entities
+                 .WithoutBurst()
+                 .ForEach((Entity entity, in SpawnPrefabComponentData initData) => {
+                    EntityMonoBehaviour instance = Object.Instantiate(_worldBehaviour.GetPrefab(initData.PrefabIndex));
 
                     instance.Entity = entity;
-                    instance.Bootstrapper = _bootstrapper;
+                    instance.WorldBehaviour = _worldBehaviour;
 
 #if UNITY_EDITOR && ENTITY_NAME_SYNC
                     EntityManager.SetName(entity, instance.name);
@@ -36,8 +37,8 @@ namespace Software10101.DOTS.Systems {
                     // doing these in an ECB makes it a ton faster
                     ecb.RemoveComponent<SpawnPrefabComponentData>(entity);
                     ecb.AddComponent(entity, new GameObjectFlagComponentData());
-                })
-                .Run(); // must be on the main thread
+                 })
+                 .Run(); // must be on the main thread
         }
     }
 }

@@ -1,5 +1,7 @@
 using Unity.Entities;
 
 namespace Software10101.DOTS.Systems.EntityCommandBufferSystems {
-    internal sealed class EndOfFrameEntityCommandBufferSystem : EntityCommandBufferSystem { }
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(PrefabSpawnSystem))]
+    internal sealed partial class EndOfFrameEntityCommandBufferSystem : EntityCommandBufferSystem { }
 }
