@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Globalization;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
+using Software10101.DOTS.Archetypes;
+using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
 using Software10101.DOTS.Systems.EntityCommandBufferSystems;
 using Software10101.DOTS.Systems.Groups;
@@ -14,7 +16,11 @@ using SimulationSystemGroup = Unity.Entities.SimulationSystemGroup;
 
 namespace Software10101.DOTS.MonoBehaviours {
     [DisallowMultipleComponent]
-    public class WorldBehaviour : MonoBehaviour {
+    public sealed class WorldBehaviour : MonoBehaviour {
+        private World _world;
+        public World World => _world;
+        public EntityManager EntityManager => _world.EntityManager;
+
         [SerializeField]
         private WorldFlags _flags = WorldFlags.Live | WorldFlags.Game;
 
@@ -33,9 +39,10 @@ namespace Software10101.DOTS.MonoBehaviours {
         [SerializeField]
         private GraphSystemGroupData _endOfFrameGroup = GraphSystemGroupData.CreateEmpty();
 
-        private World _world;
-        public World World => _world;
-        public EntityManager EntityManager => _world.EntityManager;
+        [SerializeField]
+        private List<ArchetypeProducer> _archetypeProducers = null;
+        private readonly List<EntityArchetype> _archetypes = new();
+        private readonly Dictionary<ArchetypeProducer, int> _archetypeProducerIndices = new();
 
         private void Awake() {
             _world = new World(name, _flags);
@@ -47,11 +54,15 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up simulation systems
             SimulationSystemGroup simGroup = AddSystemToCurrentPlayerLoop(new SimulationSystemGroup(), typeof(FixedUpdate));
             AddSystemToGroup(new SimulationDestroySystem(), simGroup);
-            AddSystemToGroup(new SimulationResetSystemGroup(), simGroup);
-            // TODO populate
+            SimulationResetSystemGroup simResetGroup = AddSystemToGroup(new SimulationResetSystemGroup(), simGroup);
+            foreach (SystemTypeReference systemTypeReference in _simResetGroup.GetExecutionOrder()) {
+                CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup);
+            }
             AddSystemToGroup(new PreSimulationEntityCommandBufferSystem(), simGroup);
-            AddSystemToGroup(new SimulationMainSystemGroup(), simGroup);
-            // TODO populate
+            SimulationMainSystemGroup mainSimGroup = AddSystemToGroup(new SimulationMainSystemGroup(), simGroup);
+            foreach (SystemTypeReference systemTypeReference in _mainSimGroup.GetExecutionOrder()) {
+                CreateSystemIntoGroup(systemTypeReference.SystemType, mainSimGroup);
+            }
             AddSystemToGroup(new PostSimulationEntityCommandBufferSystem(), simGroup);
 
             // UI interactions happen before the presentation group
@@ -59,21 +70,34 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up presentation systems
             PresentationSystemGroup presentationGroup = AddSystemToCurrentPlayerLoop(new PresentationSystemGroup(), typeof(Update));
             AddSystemToGroup(new PrePresentationEntityCommandBufferSystem(), presentationGroup);
-            AddSystemToGroup(new PresentationPreUpdateSystemGroup(), presentationGroup);
-            // TODO populate
+            PresentationPreUpdateSystemGroup preUpdateGroup =
+                AddSystemToGroup(new PresentationPreUpdateSystemGroup(), presentationGroup);
+            foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateGroup.GetExecutionOrder()) {
+                CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup);
+            }
             AddSystemToGroup(new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
             AddSystemToGroup(new ManagedMonoBehaviourUpdateSystem(), presentationGroup);
             AddSystemToGroup(new PostManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
-            AddSystemToGroup(new PresentationPostUpdateSystemGroup(), presentationGroup);
-            // TODO populate
+            PresentationPostUpdateSystemGroup postUpdateGroup =
+                AddSystemToGroup(new PresentationPostUpdateSystemGroup(), presentationGroup);
+            foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateGroup.GetExecutionOrder()) {
+                CreateSystemIntoGroup(systemTypeReference.SystemType, postUpdateGroup);
+            }
             AddSystemToGroup(new PostPresentationEntityCommandBufferSystem(), presentationGroup);
             AddSystemToGroup(new PresentationDestroySystem(), presentationGroup);
             AddSystemToGroup(new PrefabSpawnSystem(this), presentationGroup);
             AddSystemToGroup(new EndOfFrameEntityCommandBufferSystem(), presentationGroup);
-            AddSystemToGroup(new EndOfFrameSystemGroup(), presentationGroup);
-            // TODO populate
+            EndOfFrameSystemGroup endOfFrameGroup = AddSystemToGroup(new EndOfFrameSystemGroup(), presentationGroup);
+            foreach (SystemTypeReference systemTypeReference in _endOfFrameGroup.GetExecutionOrder()) {
+                CreateSystemIntoGroup(systemTypeReference.SystemType, endOfFrameGroup);
+            }
 
-            // TODO archetype producers
+            ArchetypeProducer[] initialArchetypeProducers = _archetypeProducers.ToArray();
+            _archetypeProducers.Clear();
+
+            foreach (ArchetypeProducer archetypeProducer in initialArchetypeProducers) {
+                AddArchetypeProducer(archetypeProducer);
+            }
         }
 
         private void Reset() {
@@ -84,7 +108,11 @@ namespace Software10101.DOTS.MonoBehaviours {
             _endOfFrameGroup = GraphSystemGroupData.CreateEmpty();
         }
 
-        public T AddSystemToCurrentPlayerLoop<T>(T system, Type playerLoopSystemType) where T : ComponentSystemBase {
+        private void OnDestroy() {
+            _world.Dispose();
+        }
+
+        private T AddSystemToCurrentPlayerLoop<T>(T system, Type playerLoopSystemType) where T : ComponentSystemBase {
             PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
 
             system = _world.AddSystemManaged(system);
@@ -95,32 +123,74 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
-        public T AddSystemToGroup<T>(T system, ComponentSystemGroup parent) where T : ComponentSystemBase {
+        private T AddSystemToGroup<T>(T system, ComponentSystemGroup parent) where T : ComponentSystemBase {
             system = _world.AddSystemManaged(system);
             parent.AddSystemToUpdateList(system);
 
             return system;
         }
 
-        /// <summary>
-        /// This reflection helper needed because the setter on <see cref="ComponentSystemGroup.EnableSystemSorting"/> is
-        /// protected.
-        /// </summary>
-        private static void SetSystemSortingEnabled(ComponentSystemGroup group, bool enabled) {
-            const string propertyName = "EnableSystemSorting";
+        private void CreateSystemIntoGroup(Type systemType, ComponentSystemGroup group) {
+            ReferenceCreatedSystemBase system = _world.CreateSystemManaged(systemType) as ReferenceCreatedSystemBase;
+            group.AddSystemToUpdateList(system);
+        }
 
-            PropertyInfo enableSystemSortingPropertyInfo = group.GetType()
-                .GetProperty(propertyName)!
-                .DeclaringType!
-                .GetProperty(propertyName);
+        public int AddArchetypeProducer(ArchetypeProducer archetypeProducer) {
+            if (_archetypeProducerIndices.TryGetValue(archetypeProducer, out int index)) {
+                return index;
+            }
 
-            enableSystemSortingPropertyInfo!.SetValue(
-                group,
-                enabled,
-                BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                null,
-                CultureInfo.CurrentCulture);
+            index = _archetypes.Count;
+            _archetypes.Add(archetypeProducer.Produce(EntityManager));
+            _archetypeProducers.Add(archetypeProducer);
+            _archetypeProducerIndices[archetypeProducer] = index;
+            return index;
+        }
+
+        public EntityMonoBehaviour GetPrefab(int prefabIndex) {
+            return _archetypeProducers[prefabIndex].Prefab;
+        }
+
+        public (Entity, EntityCommandBuffer) Create(
+            ArchetypeProducer archetypeProducer,
+            CreationBufferToken creationBufferToken = null
+        ) {
+            return Create(_archetypeProducerIndices[archetypeProducer], creationBufferToken);
+        }
+
+        public (Entity, EntityCommandBuffer) Create(int prefabIndex, CreationBufferToken creationBufferToken = null) {
+            EntityCommandBuffer ecb = creationBufferToken?.EntityCommandBuffer ??
+                                      _world.GetExistingSystemManaged<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>()
+                                          .CreateCommandBuffer();
+
+            Entity entity = ecb.CreateEntity(_archetypes[prefabIndex]);
+            ecb.AddComponent(entity, new SpawnPrefabComponentData {
+                PrefabIndex = prefabIndex
+            });
+
+            return (entity, ecb);
+        }
+
+        public void Destroy(Entity entity) {
+            EntityCommandBuffer ecb = _world
+                .GetExistingSystemManaged<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>()
+                .CreateCommandBuffer();
+
+            ecb.AddComponent(entity, new DestroyFlagComponentData());
+        }
+
+        public CreationBufferToken GetCreationBufferToken() {
+            return new CreationBufferToken {
+                EntityCommandBuffer = _world
+                    .GetExistingSystemManaged<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>()
+                    .CreateCommandBuffer()
+            };
+        }
+
+        public class CreationBufferToken {
+            internal EntityCommandBuffer EntityCommandBuffer;
+
+            internal CreationBufferToken() { }
         }
 
         [Serializable]
@@ -133,6 +203,47 @@ namespace Software10101.DOTS.MonoBehaviours {
                 };
 
                 return newData;
+            }
+
+            public IEnumerable<SystemTypeReference> GetExecutionOrder() {
+                SystemNodeData root = default;
+                Dictionary<SystemTypeReference, SystemNodeData> nodesForSystemReferences = Nodes
+                    .Where(node => {
+                        if (ReferenceEquals(node.SystemReference, null)) {
+                            root = node;
+                            return false;
+                        }
+
+                        bool nodeContentsValid = node.SystemReference;
+                        if (!nodeContentsValid) {
+                            Debug.LogWarning("System graph has missing system references!");
+                        }
+
+                        return nodeContentsValid;
+                    })
+                    .ToDictionary(node => node.SystemReference, node => node);
+
+                // minus 1 because the root is not a real system
+                List<SystemTypeReference> results = new(Nodes.Length - 1);
+                Queue<SystemTypeReference> fringe = new(root.Dependencies);
+
+                while (fringe.Count > 0) {
+                    SystemTypeReference systemReference = fringe.Dequeue();
+
+                    if (!systemReference) {
+                        continue;
+                    }
+
+                    results.Add(systemReference);
+
+                    SystemNodeData node = nodesForSystemReferences[systemReference];
+
+                    foreach (SystemTypeReference systemTypeReference in node.Dependencies) {
+                        fringe.Enqueue(systemTypeReference);
+                    }
+                }
+
+                return results;
             }
 
             [Serializable]
@@ -151,10 +262,6 @@ namespace Software10101.DOTS.MonoBehaviours {
                     Dependencies = dependencies;
                 }
             }
-        }
-
-        public EntityMonoBehaviour GetPrefab(int initDataPrefabIndex) {
-            throw new NotImplementedException();
         }
     }
 }

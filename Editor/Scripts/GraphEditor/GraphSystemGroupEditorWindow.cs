@@ -95,6 +95,8 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             _addNodeChoices.Clear();
 
+            // TODO this needs to exclude systems that are in other groups in the same world
+
             int[] existingInstanceIds = _graphView.nodes
                 .Where(node => node is SystemNode systemNode && systemNode.InstanceId.HasValue)
                 // ReSharper disable once PossibleInvalidOperationException // HasValue check is on the line above
@@ -239,8 +241,8 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                         : null,
                     systemNode.GetPosition().position,
                     systemNode.InstanceId.HasValue
-                        ? dependencies.ContainsKey(systemNode.InstanceId.Value)
-                            ? dependencies[systemNode.InstanceId.Value]?
+                        ? dependencies.TryGetValue(systemNode.InstanceId.Value, out HashSet<int> nodeDependencies)
+                            ? nodeDependencies?
                                 .Select(instanceId => (SystemTypeReference)EditorUtility.InstanceIDToObject(instanceId))
                                 .ToArray() ?? Array.Empty<SystemTypeReference>()
                             : Array.Empty<SystemTypeReference>()
