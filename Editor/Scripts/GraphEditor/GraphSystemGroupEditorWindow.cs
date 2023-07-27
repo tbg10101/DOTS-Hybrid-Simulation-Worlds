@@ -36,7 +36,9 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                     return _addNodeChoices
                         .Select(path => new GraphSystemGroupGraphView.AddNodeAction(path, dropdownMenuAction => {
                             SystemTypeReference systemReference = AssetDatabase.LoadAssetAtPath<SystemTypeReference>(path);
-                            _graphView.AddSystemNode(systemReference.GetInstanceID(), dropdownMenuAction.eventInfo.localMousePosition);
+                            _graphView.AddSystemNode(
+                                systemReference.GetInstanceID(),
+                                dropdownMenuAction.eventInfo.localMousePosition);
                             PopulateNodeCreationChoices();
                         }))
                         .ToArray();
@@ -68,22 +70,10 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             _toolbar = new();
 
-            PopulateNodeCreationChoices();
-            DropdownField nodeCreateDropDown = new("Create Node", _addNodeChoices, -1);
-            nodeCreateDropDown.RegisterValueChangedCallback(evt => {
-                if (string.IsNullOrEmpty(evt.newValue)) {
-                    return;
-                }
-
-                SystemTypeReference systemReference = AssetDatabase.LoadAssetAtPath<SystemTypeReference>(evt.newValue);
-                _graphView.AddSystemNode(systemReference.GetInstanceID());
-                nodeCreateDropDown.index = -1;
-                PopulateNodeCreationChoices();
-            });
-            _toolbar.Add(nodeCreateDropDown);
-
             _loadedLabel = new Label("");
             _toolbar.Add(_loadedLabel);
+
+            _toolbar.Add(new ToolbarSpacer { flex = true});
 
             Button saveButton = new(Save) {
                 text = "Save"
@@ -142,8 +132,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             existingInstanceIdsNative.Dispose();
 
             HashSet<string> existingNodeGuids = new();
-            for (int i = 0; i < existingNodeGuidsNative.Length; i++) {
-                GUID existingGuid = existingNodeGuidsNative[i];
+            foreach (GUID existingGuid in existingNodeGuidsNative) {
                 existingNodeGuids.Add(existingGuid.ToString());
             }
 
@@ -219,6 +208,10 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             if (_serializedObject) {
                 string dirtyFlag = _graphView.Dirty ? " *" : "";
                 _loadedLabel.text = $"{_serializedObject.name} - {_propertyName}{dirtyFlag}";
+
+                if (Application.isPlaying) {
+                    _loadedLabel.text = $"{_loadedLabel.text} !! changes do not take effect in play mode !!";
+                }
             } else {
                 _loadedLabel.text = "";
             }
