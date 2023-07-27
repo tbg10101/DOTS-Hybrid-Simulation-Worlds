@@ -1,17 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace Software10101.DOTS.Editor.GraphEditor {
-    // TODO add node creation from context menu
-    // TODO add system reference selection context menu item
     public class GraphSystemGroupGraphView : GraphView {
         public bool Dirty = false;
 
-        public GraphSystemGroupGraphView() {
+        private readonly Func<ICollection<AddNodeAction>> _getAddNodeChoices;
+
+        public GraphSystemGroupGraphView(Func<ICollection<AddNodeAction>> getAddNodeChoices) {
+            _getAddNodeChoices = getAddNodeChoices;
+
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
 
             this.AddManipulator(new ContentDragger());
@@ -135,6 +139,49 @@ namespace Software10101.DOTS.Editor.GraphEditor {
         public void AddSystemDependency(SystemNode dependent, SystemNode dependency) {
             Edge edge = dependent.DependenciesInput.ConnectTo(dependency.SelfOutput);
             AddElement(edge);
+        }
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt) {
+            // add system reference object selection context menu item
+            if (evt.target is SystemNode systemNode && systemNode.InstanceId.HasValue) {
+                evt.menu.AppendAction(
+                    "Select System Reference Object",
+                    _ => {
+                        Object objectToSelect = EditorUtility.InstanceIDToObject(systemNode.InstanceId.Value);
+                        Selection.SetActiveObjectWithContext(objectToSelect, null);
+                    });
+                evt.menu.AppendSeparator();
+            }
+
+            // add nodes
+            ICollection<AddNodeAction> addNodeActions = _getAddNodeChoices.Invoke();
+
+            if (addNodeActions.Count <= 0) {
+                evt.menu.AppendAction(
+                    "Add System/No Systems Available",
+                    _ => { },
+                    DropdownMenuAction.Status.Disabled);
+            } else {
+                foreach (AddNodeAction addNodeAction in addNodeActions) {
+                    evt.menu.AppendAction(
+                        $"Add System/{addNodeAction.Path}",
+                        dropdownMenuAction => { addNodeAction.Action.Invoke(dropdownMenuAction); });
+                }
+            }
+
+            evt.menu.AppendSeparator();
+
+            base.BuildContextualMenu(evt);
+        }
+
+        public readonly struct AddNodeAction {
+            public readonly string Path;
+            public readonly Action<DropdownMenuAction> Action;
+
+            public AddNodeAction(string path, Action<DropdownMenuAction> action) {
+                Path = path;
+                Action = action;
+            }
         }
     }
 }

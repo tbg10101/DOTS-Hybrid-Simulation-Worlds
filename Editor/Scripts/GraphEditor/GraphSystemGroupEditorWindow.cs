@@ -31,7 +31,17 @@ namespace Software10101.DOTS.Editor.GraphEditor {
         private void CreateGUI() {
             titleContent = new GUIContent("Graph System Group");
 
-            _graphView = new GraphSystemGroupGraphView {
+            _graphView = new GraphSystemGroupGraphView(
+                () => {
+                    return _addNodeChoices
+                        .Select(path => new GraphSystemGroupGraphView.AddNodeAction(path, dropdownMenuAction => {
+                            SystemTypeReference systemReference = AssetDatabase.LoadAssetAtPath<SystemTypeReference>(path);
+                            _graphView.AddSystemNode(systemReference.GetInstanceID(), dropdownMenuAction.eventInfo.localMousePosition);
+                            PopulateNodeCreationChoices();
+                        }))
+                        .ToArray();
+                }
+            ) {
                 name = "System Group Graph View"
             };
             _graphView.StretchToParentSize();
