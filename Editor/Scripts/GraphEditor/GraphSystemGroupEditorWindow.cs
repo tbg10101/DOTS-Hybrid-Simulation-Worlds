@@ -32,7 +32,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             titleContent = new GUIContent("Graph System Group");
 
             _graphView = new GraphSystemGroupGraphView {
-                name = "World Name > System Name"
+                name = "System Group Graph View"
             };
             _graphView.StretchToParentSize();
             _graphView.graphViewChanged += change => {
@@ -80,6 +80,11 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             };
             _toolbar.Add(saveButton);
 
+            Button revertButton = new(Revert) {
+                text = "Revert"
+            };
+            _toolbar.Add(revertButton);
+
             rootVisualElement.Add(_toolbar);
             _toolbar.SetEnabled(false);
         }
@@ -95,13 +100,25 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             _addNodeChoices.Clear();
 
-            // TODO this needs to exclude systems that are in other groups in the same world
+            if (!_serializedObject) {
+                return;
+            }
 
-            int[] existingInstanceIds = _graphView.nodes
-                .Where(node => node is SystemNode systemNode && systemNode.InstanceId.HasValue)
-                // ReSharper disable once PossibleInvalidOperationException // HasValue check is on the line above
-                .Select(node => ((SystemNode)node).InstanceId.Value)
+            WorldBehaviour editingWorldBehaviour = (WorldBehaviour)_serializedObject;
+
+            IEnumerable<int> existingInstanceIdsInGraph = _graphView.nodes
+                .OfType<SystemNode>()
+                .Where(node => node.InstanceId.HasValue)
+                .Select(node => node.InstanceId.Value);
+
+            IEnumerable<int> existingInstanceIdsInWorld = editingWorldBehaviour.GetAllConfiguredSystemReferences()
+                .Where(entry => entry.Value != _propertyName)
+                .Select(entry => entry.Key.GetInstanceID());
+
+            int[] existingInstanceIds = existingInstanceIdsInGraph
+                .Union(existingInstanceIdsInWorld)
                 .ToArray();
+
             NativeArray<int> existingInstanceIdsNative = new(existingInstanceIds.Length, Allocator.Persistent);
             for (int i = 0; i < existingInstanceIds.Length; i++) {
                 int existingInstanceId = existingInstanceIds[i];
@@ -124,6 +141,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                 AssetDatabase.FindAssets($"t:{nameof(SystemTypeReference)}")
                     .Where(guid => !existingNodeGuids.Contains(guid))
                     .Select(AssetDatabase.GUIDToAssetPath)
+                    .Select(path => $"{path}")
             );
 
             existingNodeGuidsNative.Dispose();
@@ -151,9 +169,9 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             }
 
             if (_serializedObjectPrev != _serializedObject || _propertyNamePrev != _propertyName || _worldBehaviourPrevExist != _serializedObject) {
-                _graphView.DeleteElements(_graphView.graphElements);
-
                 if (!_serializedObject) {
+                    _graphView.DeleteElements(_graphView.graphElements);
+
                     _toolbar.SetEnabled(false);
 
                     Node selectGraphNode = new() {
@@ -168,12 +186,18 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                     _graphView.UpdateViewTransform(Vector3.zero, Vector3.one);
                     _graphView.SetEnabled(false);
                 } else {
+                    SaveChangesDialog();
+
+                    _graphView.DeleteElements(_graphView.graphElements);
+
                     _toolbar.SetEnabled(true);
                     _graphView.SetEnabled(true);
 
                     Load();
                 }
             } else if (_serializedObject && _graphView.enabledSelf == false) {
+                SaveChangesDialog();
+
                 _graphView.DeleteElements(_graphView.graphElements);
 
                 _toolbar.SetEnabled(true);
@@ -203,9 +227,21 @@ namespace Software10101.DOTS.Editor.GraphEditor {
         }
 
         private void OnDisable() {
+            SaveChangesDialog();
+
             rootVisualElement.Clear();
             _serializedObject = null;
             _propertyName = null;
+        }
+
+        private void SaveChangesDialog() {
+            if (_graphView.Dirty && EditorUtility.DisplayDialog("Save changes?",
+                    "The graph contains unsaved changes. Would you like to save them?",
+                    "Save",
+                    "Discard")) {
+
+                Save();
+            }
         }
 
         private void Save() {
@@ -255,6 +291,8 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             so.ApplyModifiedProperties();
 
             _graphView.Dirty = false;
+
+            PopulateNodeCreationChoices();
         }
 
         private void Load() {
@@ -289,6 +327,25 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                     }
                 }
             }
+
+            _graphView.Dirty = false;
+        }
+
+        private void Revert() {
+            if (_graphView.Dirty && EditorUtility.DisplayDialog("Revert changes?",
+                    "The graph contains unsaved changes. Are you sure you want to revert them?",
+                    "Cancel",
+                    "Revert")) {
+
+                return;
+            }
+
+            _graphView.DeleteElements(_graphView.graphElements);
+
+            _toolbar.SetEnabled(true);
+            _graphView.SetEnabled(true);
+
+            Load();
         }
     }
 }

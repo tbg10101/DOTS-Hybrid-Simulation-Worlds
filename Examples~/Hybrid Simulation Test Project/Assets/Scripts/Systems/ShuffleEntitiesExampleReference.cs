@@ -10,16 +10,14 @@ namespace Software10101.DOTS.Example.Systems {
     [CreateAssetMenu(menuName = "Systems/" + nameof(ShuffleEntitiesExampleSystem))]
     public class ShuffleEntitiesExampleReference : SystemTypeReference<ShuffleEntitiesExampleSystem> { }
 
-    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
-    // ReSharper disable once RedundantExtendsListEntry
     public partial class ShuffleEntitiesExampleSystem : ReferenceCreatedSystemBase<ShuffleEntitiesExampleReference> {
         protected override void OnUpdate() {
-            Random r = new Random(Convert.ToUInt32(new System.Random().Next()));
+            Random r = new(Convert.ToUInt32(new System.Random().Next()));
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // get entities with position
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            NativeList<Entity> entitiesWithPosition = new NativeList<Entity>(Allocator.TempJob);
+            NativeList<Entity> entitiesWithPosition = new(Allocator.TempJob);
 
             Entities
                 .ForEach((Entity e, ref PositionComponentData component) => {

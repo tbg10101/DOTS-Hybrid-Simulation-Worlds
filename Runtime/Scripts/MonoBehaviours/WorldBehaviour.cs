@@ -171,6 +171,28 @@ namespace Software10101.DOTS.MonoBehaviours {
             return (entity, ecb);
         }
 
+        public IReadOnlyDictionary<SystemTypeReference, string> GetAllConfiguredSystemReferences() {
+            Dictionary<SystemTypeReference, string> result = new();
+
+            Dictionary<GraphSystemGroupData, string> groups = new() {
+                { _simResetGroup, nameof(_simResetGroup) },
+                { _mainSimGroup, nameof(_mainSimGroup) },
+                { _presentationPreUpdateGroup, nameof(_presentationPreUpdateGroup) },
+                { _presentationPostUpdateGroup, nameof(_presentationPostUpdateGroup) },
+                { _endOfFrameGroup, nameof(_endOfFrameGroup) },
+            };
+
+            foreach ((GraphSystemGroupData graphSystemGroupData, string groupName) in groups) {
+                foreach (GraphSystemGroupData.SystemNodeData systemNodeData in graphSystemGroupData.Nodes) {
+                    if (systemNodeData.SystemReference) {
+                        result.Add(systemNodeData.SystemReference, groupName);
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public void Destroy(Entity entity) {
             EntityCommandBuffer ecb = _world
                 .GetExistingSystemManaged<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>()
@@ -223,8 +245,7 @@ namespace Software10101.DOTS.MonoBehaviours {
                     })
                     .ToDictionary(node => node.SystemReference, node => node);
 
-                // minus 1 because the root is not a real system
-                List<SystemTypeReference> results = new(Nodes.Length - 1);
+                List<SystemTypeReference> results = new();
                 Queue<SystemTypeReference> fringe = new(root.Dependencies);
 
                 while (fringe.Count > 0) {
@@ -234,7 +255,14 @@ namespace Software10101.DOTS.MonoBehaviours {
                         continue;
                     }
 
-                    results.Add(systemReference);
+                    int existingIndex = results.IndexOf(systemReference);
+
+                    if (existingIndex < 0) {
+                        results.Insert(0, systemReference);
+                    } else if (existingIndex > 0) {
+                        results.RemoveAt(existingIndex);
+                        results.Insert(0, systemReference);
+                    }
 
                     SystemNodeData node = nodesForSystemReferences[systemReference];
 

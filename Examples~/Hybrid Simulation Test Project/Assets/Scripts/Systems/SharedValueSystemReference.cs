@@ -8,8 +8,6 @@ namespace Software10101.DOTS.Example.Systems {
     [CreateAssetMenu(menuName = "Systems/" + nameof(SharedValueSystem))]
     public class SharedValueSystemReference : SystemTypeReference<SharedValueSystem> { }
 
-    // ReSharper disable once PartialTypeWithSinglePart // systems need to be partial after Entities 0.50
-    // ReSharper disable once RedundantExtendsListEntry
     public partial class SharedValueSystem : ReferenceCreatedSystemBase<SharedValueSystemReference> {
         protected override void OnUpdate() {
             NativeReference<int> nativeReference = new(0, Allocator.TempJob);

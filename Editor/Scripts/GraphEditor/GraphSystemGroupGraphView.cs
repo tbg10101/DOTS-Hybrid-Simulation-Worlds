@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Software10101.DOTS.Editor.GraphEditor {
+    // TODO add node creation from context menu
+    // TODO add system reference selection context menu item
     public class GraphSystemGroupGraphView : GraphView {
         public bool Dirty = false;
 
@@ -25,18 +27,80 @@ namespace Software10101.DOTS.Editor.GraphEditor {
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter) {
-            return ports
-                .Where(port => startPort.node != port.node)
-                .Where(port => startPort.direction != port.direction)
-                .Where(port => startPort.portType == port.portType)
-                .ToList();
+            // used to find circular dependencies
+            Dictionary<Port, List<Node>> oppositeDirectionPortLinks = new();
 
-            // TODO prevent circular dependencies
+            switch (startPort.direction) {
+                case Direction.Input:
+                    edges.ForEach(edge => {
+                        if (edge.output == null) {
+                            return;
+                        }
+
+                        if (!oppositeDirectionPortLinks.TryGetValue(edge.output, out List<Node> inputPorts)) {
+                            inputPorts = new List<Node>();
+                            oppositeDirectionPortLinks[edge.output] = inputPorts;
+                        }
+
+                        inputPorts.Add(edge.input.node);
+                    });
+                    break;
+                case Direction.Output:
+                    edges.ForEach(edge => {
+                        if (edge.input == null) {
+                            return;
+                        }
+
+                        if (!oppositeDirectionPortLinks.TryGetValue(edge.input, out List<Node> outputPorts)) {
+                            outputPorts = new List<Node>();
+                            oppositeDirectionPortLinks[edge.input] = outputPorts;
+                        }
+
+                        outputPorts.Add(edge.output.node);
+                    });
+                    break;
+            }
+
+            return ports
+                .Where(port => startPort.node != port.node) // disallow linking to self
+                .Where(port => startPort.direction != port.direction) // disallow input-input and output-output
+                .Where(port => startPort.portType == port.portType) // ensure port type matching
+                .Where(port => {
+                    // disallow circular dependencies
+
+                    Node targetNode = port.node;
+
+                    Queue<Node> fringe = new();
+                    fringe.Enqueue(startPort.node);
+
+                    while (fringe.Count > 0) {
+                        Node currentNode = fringe.Dequeue();
+
+                        VisualElement oppositePortContainer = startPort.direction == Direction.Input
+                            ? currentNode.outputContainer
+                            : currentNode.inputContainer;
+
+                        foreach (Port oppositePort in oppositePortContainer.Children().OfType<Port>()) {
+                            if (oppositeDirectionPortLinks.TryGetValue(oppositePort, out List<Node> otherNodes)) {
+                                foreach (Node otherNode in otherNodes) {
+                                    if (otherNode == targetNode) {
+                                        return false; // circular dependency
+                                    }
+
+                                    fringe.Enqueue(otherNode);
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                })
+                .ToList();
         }
 
         public SystemNode AddSystemNode(int? instanceId, Vector2? position = null) {
             SystemNode systemNode = new()  {
-                title = instanceId.HasValue ? EditorUtility.InstanceIDToObject(instanceId.Value).name : "Root",
+                title = instanceId.HasValue ? EditorUtility.InstanceIDToObject(instanceId.Value).name : "End of Group",
                 InstanceId = instanceId
             };
 
@@ -69,11 +133,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
         }
 
         public void AddSystemDependency(SystemNode dependent, SystemNode dependency) {
-            Edge edge = new() {
-                input = dependent.DependenciesInput,
-                output = dependency.SelfOutput
-            };
-
+            Edge edge = dependent.DependenciesInput.ConnectTo(dependency.SelfOutput);
             AddElement(edge);
         }
     }
