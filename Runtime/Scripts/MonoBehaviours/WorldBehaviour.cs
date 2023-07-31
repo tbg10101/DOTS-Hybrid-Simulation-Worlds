@@ -49,31 +49,33 @@ namespace Software10101.DOTS.MonoBehaviours {
 
             // set up initialization group
             // ReSharper disable once UnusedVariable // not used by the bootstrapper but is one of Unity's root system groups
-            InitializationSystemGroup initGroup = AddSystemToCurrentPlayerLoop(new InitializationSystemGroup(), typeof(Initialization));
+            InitializationSystemGroup initGroup =
+                AddSystemToCurrentPlayerLoop(new InitializationSystemGroup(), typeof(Initialization));
 
             // set up simulation systems
             SimulationSystemGroup simGroup = AddSystemToCurrentPlayerLoop(new SimulationSystemGroup(), typeof(FixedUpdate));
             AddSystemToGroup(new SimulationDestroySystem(), simGroup);
             SimulationResetSystemGroup simResetGroup = AddSystemToGroup(new SimulationResetSystemGroup(), simGroup);
             foreach (SystemTypeReference systemTypeReference in _simResetGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup).SetCreator(systemTypeReference);
             }
             AddSystemToGroup(new PreSimulationEntityCommandBufferSystem(), simGroup);
             SimulationMainSystemGroup mainSimGroup = AddSystemToGroup(new SimulationMainSystemGroup(), simGroup);
             foreach (SystemTypeReference systemTypeReference in _mainSimGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, mainSimGroup);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, mainSimGroup).SetCreator(systemTypeReference);
             }
             AddSystemToGroup(new PostSimulationEntityCommandBufferSystem(), simGroup);
 
             // UI interactions happen before the presentation group
 
             // set up presentation systems
-            PresentationSystemGroup presentationGroup = AddSystemToCurrentPlayerLoop(new PresentationSystemGroup(), typeof(Update));
+            PresentationSystemGroup presentationGroup =
+                AddSystemToCurrentPlayerLoop(new PresentationSystemGroup(), typeof(Update));
             AddSystemToGroup(new PrePresentationEntityCommandBufferSystem(), presentationGroup);
             PresentationPreUpdateSystemGroup preUpdateGroup =
                 AddSystemToGroup(new PresentationPreUpdateSystemGroup(), presentationGroup);
             foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup).SetCreator(systemTypeReference);
             }
             AddSystemToGroup(new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
             AddSystemToGroup(new ManagedMonoBehaviourUpdateSystem(), presentationGroup);
@@ -81,7 +83,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             PresentationPostUpdateSystemGroup postUpdateGroup =
                 AddSystemToGroup(new PresentationPostUpdateSystemGroup(), presentationGroup);
             foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, postUpdateGroup);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, postUpdateGroup).SetCreator(systemTypeReference);
             }
             AddSystemToGroup(new PostPresentationEntityCommandBufferSystem(), presentationGroup);
             AddSystemToGroup(new PresentationDestroySystem(), presentationGroup);
@@ -89,7 +91,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystemToGroup(new EndOfFrameEntityCommandBufferSystem(), presentationGroup);
             EndOfFrameSystemGroup endOfFrameGroup = AddSystemToGroup(new EndOfFrameSystemGroup(), presentationGroup);
             foreach (SystemTypeReference systemTypeReference in _endOfFrameGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, endOfFrameGroup);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, endOfFrameGroup).SetCreator(systemTypeReference);
             }
 
             ArchetypeProducer[] initialArchetypeProducers = _archetypeProducers.ToArray();
@@ -130,9 +132,10 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
-        private void CreateSystemIntoGroup(Type systemType, ComponentSystemGroup group) {
+        private ReferenceCreatedSystemBase CreateSystemIntoGroup(Type systemType, ComponentSystemGroup group) {
             ReferenceCreatedSystemBase system = _world.CreateSystemManaged(systemType) as ReferenceCreatedSystemBase;
             group.AddSystemToUpdateList(system);
+            return system;
         }
 
         public int AddArchetypeProducer(ArchetypeProducer archetypeProducer) {

@@ -13,20 +13,26 @@ namespace Software10101.DOTS.MonoBehaviours {
         public override Type SystemType => typeof(T);
     }
 
-    // ReSharper disable once PartialTypeWithSinglePart
     public abstract partial class ReferenceCreatedSystemBase : SystemBase {
         internal abstract void SetCreator(SystemTypeReference creator);
+
+        /// <summary>
+        /// Invoked after the Creator field is populated. This will happen after OnCreate.
+        /// </summary>
+        protected virtual void OnCreatorSet() {
+            // do nothing by default
+        }
     }
 
-    // ReSharper disable once PartialTypeWithSinglePart
     public abstract partial class ReferenceCreatedSystemBase<T> : ReferenceCreatedSystemBase where T : SystemTypeReference {
-        public T Creator {
-            internal set;
+        protected T Creator {
+            private set;
             get;
         }
 
         internal sealed override void SetCreator(SystemTypeReference creator) {
             Creator = (T) creator;
+            OnCreatorSet();
         }
     }
 }

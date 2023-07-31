@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b68ceaaf2af465191d7a983fb6e221f, type: 3}
   m_Name: Apply Velocity System Reference
   m_EditorClassIdentifier: 
+  _multiplier: 0.05
