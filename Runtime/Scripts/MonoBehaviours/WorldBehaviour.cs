@@ -22,7 +22,7 @@ namespace Software10101.DOTS.MonoBehaviours {
         public EntityManager EntityManager => _world.EntityManager;
 
         [SerializeField]
-        private WorldFlags _flags = WorldFlags.Live | WorldFlags.Game;
+        private WorldFlags _flags = WorldFlags.Game;
 
         [SerializeField]
         private GraphSystemGroupData _simResetGroup = GraphSystemGroupData.CreateEmpty();
