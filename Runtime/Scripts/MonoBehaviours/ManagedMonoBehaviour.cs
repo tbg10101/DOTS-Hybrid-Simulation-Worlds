@@ -27,20 +27,25 @@ namespace Software10101.DOTS.MonoBehaviours {
         protected abstract void OnUpdate();
 
         internal static void DoUpdate() {
+            Profiler.BeginSample("ManagedMonoBehaviour.OnUpdate()");
+
             int i;
             int count = Instances.Count;
 
             for (i = 0; i < count; i++) {
-                Profiler.BeginSample("ManagedMonoBehaviour.OnUpdate()");
+                ManagedMonoBehaviour instance = Instances[i];
 
-                if (Instances[i]._destroyed) {
-                    Debug.LogWarning($"{Instances[i].name} was destroyed but is still on this list of objects to update!");
+                if (instance._destroyed) {
+                    Debug.LogWarning($"{instance.name} was destroyed but is still on this list of objects to update!");
                     continue;
                 }
 
-                Instances[i].OnUpdate();
-                Profiler.EndSample();
+                // Profiler.BeginSample($"ManagedMonoBehaviour.OnUpdate() - {instance.name}");
+                instance.OnUpdate();
+                // Profiler.EndSample();
             }
+
+            Profiler.EndSample();
         }
 
         internal virtual void Destroy() {
