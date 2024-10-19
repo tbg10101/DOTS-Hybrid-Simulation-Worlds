@@ -28,3 +28,4 @@ desktop.ini
 # JetBrains Rider generated #
 # ========================= #
 .idea
+/Examples~/*/*.user

@@ -24,6 +24,10 @@ namespace Software10101.DOTS.MonoBehaviours {
         [SerializeField]
         private WorldFlags _flags = WorldFlags.Game;
 
+        [Tooltip("Also know as the Initialization group.")]
+        [SerializeField]
+        private GraphSystemGroupData _startOfFrameGroup = GraphSystemGroupData.CreateEmpty();
+
         [SerializeField]
         private GraphSystemGroupData _simResetGroup = GraphSystemGroupData.CreateEmpty();
 
@@ -48,9 +52,12 @@ namespace Software10101.DOTS.MonoBehaviours {
             _world = new World(name, _flags);
 
             // set up initialization group
-            // ReSharper disable once UnusedVariable // not used by the bootstrapper but is one of Unity's root system groups
-            InitializationSystemGroup initGroup =
+            InitializationSystemGroup startOfFrameGroup =
                 AddSystemToCurrentPlayerLoop(new InitializationSystemGroup(), typeof(Initialization));
+            foreach (SystemTypeReference systemTypeReference in _startOfFrameGroup.GetExecutionOrder()) {
+                CreateSystemIntoGroup(systemTypeReference.SystemType, startOfFrameGroup).SetCreator(systemTypeReference);
+            }
+            AddSystemToGroup(new PostStartOfFrameEntityCommandBufferSystem(), startOfFrameGroup);
 
             // set up simulation systems
             SimulationSystemGroup simGroup = AddSystemToCurrentPlayerLoop(new SimulationSystemGroup(), typeof(FixedUpdate));
@@ -103,6 +110,7 @@ namespace Software10101.DOTS.MonoBehaviours {
         }
 
         private void Reset() {
+            _startOfFrameGroup = GraphSystemGroupData.CreateEmpty();
             _simResetGroup = GraphSystemGroupData.CreateEmpty();
             _mainSimGroup = GraphSystemGroupData.CreateEmpty();
             _presentationPreUpdateGroup = GraphSystemGroupData.CreateEmpty();
@@ -178,6 +186,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             Dictionary<SystemTypeReference, string> result = new();
 
             Dictionary<GraphSystemGroupData, string> groups = new() {
+                { _startOfFrameGroup, nameof(_startOfFrameGroup) },
                 { _simResetGroup, nameof(_simResetGroup) },
                 { _mainSimGroup, nameof(_mainSimGroup) },
                 { _presentationPreUpdateGroup, nameof(_presentationPreUpdateGroup) },
@@ -219,7 +228,7 @@ namespace Software10101.DOTS.MonoBehaviours {
         }
 
         [Serializable]
-        public struct GraphSystemGroupData {
+        public struct GraphSystemGroupData : IEquatable<GraphSystemGroupData> {
             public SystemNodeData[] Nodes;
 
             public static GraphSystemGroupData CreateEmpty() {
@@ -278,7 +287,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             }
 
             [Serializable]
-            public struct SystemNodeData {
+            public struct SystemNodeData : IEquatable<SystemNodeData> {
                 public SystemTypeReference SystemReference;
                 public Vector2 NodePosition;
                 public SystemTypeReference[] Dependencies;
@@ -292,6 +301,53 @@ namespace Software10101.DOTS.MonoBehaviours {
                     NodePosition = nodePosition;
                     Dependencies = dependencies;
                 }
+
+                public bool Equals(SystemNodeData other) {
+                    return Equals(SystemReference, other.SystemReference) &&
+                           NodePosition.Equals(other.NodePosition) &&
+                           Dependencies.SequenceEqual(other.Dependencies);
+                }
+
+                public override bool Equals(object obj) {
+                    return obj is SystemNodeData other && Equals(other);
+                }
+
+                public override int GetHashCode() {
+                    unchecked {
+                        int hashCode = (SystemReference != null ? SystemReference.GetHashCode() : 0);
+                        hashCode = (hashCode * 397) ^ NodePosition.GetHashCode();
+                        hashCode = (hashCode * 397) ^ (Dependencies != null ? Dependencies.GetHashCode() : 0);
+                        return hashCode;
+                    }
+                }
+
+                public static bool operator ==(SystemNodeData left, SystemNodeData right) {
+                    return left.Equals(right);
+                }
+
+                public static bool operator !=(SystemNodeData left, SystemNodeData right) {
+                    return !left.Equals(right);
+                }
+            }
+
+            public bool Equals(GraphSystemGroupData other) {
+                return Nodes.SequenceEqual(other.Nodes);
+            }
+
+            public override bool Equals(object obj) {
+                return obj is GraphSystemGroupData other && Equals(other);
+            }
+
+            public override int GetHashCode() {
+                return (Nodes != null ? Nodes.GetHashCode() : 0);
+            }
+
+            public static bool operator ==(GraphSystemGroupData left, GraphSystemGroupData right) {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(GraphSystemGroupData left, GraphSystemGroupData right) {
+                return !left.Equals(right);
             }
         }
     }
