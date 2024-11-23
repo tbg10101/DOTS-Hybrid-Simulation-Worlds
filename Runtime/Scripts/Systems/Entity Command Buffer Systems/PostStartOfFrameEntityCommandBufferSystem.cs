@@ -1,8 +1,6 @@
-using Software10101.DOTS.Systems.Groups;
 using Unity.Entities;
 
 namespace Software10101.DOTS.Systems.EntityCommandBufferSystems {
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(SimulationMainSystemGroup))]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     public sealed partial class PostStartOfFrameEntityCommandBufferSystem : EntityCommandBufferSystem { }
 }
