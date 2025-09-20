@@ -15,8 +15,9 @@ namespace Software10101.DOTS.Example.Systems {
             float presentationFraction = TimeUtil.PresentationTimeFraction; // this is done just once instead of once per instance
 
             Entities
-                .ForEach((ref PositionComponentData component) => {
-                    component.PresentationValue = math.lerp(component.PreviousValue, component.NextValue, presentationFraction);
+                .ForEach((ref PositionComponentData positionData, ref RotationComponentData rotationData) => {
+                    positionData.PresentationValue = math.lerp(positionData.PreviousValue, positionData.NextValue, presentationFraction);
+                    rotationData.PresentationValue = math.slerp(rotationData.PreviousValue, rotationData.NextValue, presentationFraction);
                 })
                 .ScheduleParallel();
 

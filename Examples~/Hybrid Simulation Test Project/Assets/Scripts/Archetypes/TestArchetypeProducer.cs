@@ -9,6 +9,7 @@ namespace Software10101.DOTS.Example.Archetypes {
         public override EntityArchetype Produce(EntityManager entityManager) {
             return entityManager.CreateArchetype(
                 new ComponentType(typeof(PositionComponentData)),
+                new ComponentType(typeof(RotationComponentData)),
                 new ComponentType(typeof(VelocityComponentData), ComponentType.AccessMode.ReadOnly));
         }
     }

@@ -516,65 +516,55 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _flags: 5
-  _initializationGroup:
+  _startOfFrameGroup:
     Nodes:
     - SystemReference: {fileID: 0}
-      NodePosition: {x: 1126, y: 441}
+      NodePosition: {x: 1298, y: 529}
       Dependencies: []
   _simResetGroup:
     Nodes:
     - SystemReference: {fileID: 0}
-      NodePosition: {x: 918, y: 271}
+      NodePosition: {x: 1103, y: 463}
       Dependencies:
       - {fileID: 11400000, guid: e01661ff769361b4b937408c043acd78, type: 2}
     - SystemReference: {fileID: 11400000, guid: e01661ff769361b4b937408c043acd78, type: 2}
-      NodePosition: {x: 604, y: 271}
+      NodePosition: {x: 725, y: 479}
       Dependencies: []
   _mainSimGroup:
     Nodes:
+    - SystemReference: {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
+      NodePosition: {x: -42, y: 160}
+      Dependencies: []
     - SystemReference: {fileID: 0}
-      NodePosition: {x: 1047, y: 292}
+      NodePosition: {x: 391, y: 213}
       Dependencies:
       - {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
-      - {fileID: 11400000, guid: 249aa1ed49aa70a4d958c82208bf280d, type: 2}
-    - SystemReference: {fileID: 11400000, guid: 249aa1ed49aa70a4d958c82208bf280d, type: 2}
-      NodePosition: {x: 707, y: 400}
-      Dependencies:
-      - {fileID: 11400000, guid: 9189ee691f3a64b47a2c7d7f4dc763ab, type: 2}
-    - SystemReference: {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
-      NodePosition: {x: 710, y: 203}
-      Dependencies:
-      - {fileID: 11400000, guid: 9189ee691f3a64b47a2c7d7f4dc763ab, type: 2}
-      - {fileID: 11400000, guid: 346a514b180eabe40902f00f991778d9, type: 2}
-    - SystemReference: {fileID: 11400000, guid: 9189ee691f3a64b47a2c7d7f4dc763ab, type: 2}
-      NodePosition: {x: 379, y: 292}
-      Dependencies:
-      - {fileID: 11400000, guid: 346a514b180eabe40902f00f991778d9, type: 2}
-    - SystemReference: {fileID: 11400000, guid: 346a514b180eabe40902f00f991778d9, type: 2}
-      NodePosition: {x: 38, y: 165}
+      - {fileID: 11400000, guid: 59f656d1cbea902418fca75263702495, type: 2}
+    - SystemReference: {fileID: 11400000, guid: 59f656d1cbea902418fca75263702495, type: 2}
+      NodePosition: {x: -58, y: 342}
       Dependencies: []
   _presentationPreUpdateGroup:
     Nodes:
     - SystemReference: {fileID: 0}
-      NodePosition: {x: 574, y: 220}
+      NodePosition: {x: 1367, y: 546}
       Dependencies:
-      - {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
-    - SystemReference: {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
-      NodePosition: {x: 240, y: 220}
+      - {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
+    - SystemReference: {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
+      NodePosition: {x: 636, y: 499}
       Dependencies: []
   _presentationPostUpdateGroup:
     Nodes:
     - SystemReference: {fileID: 0}
-      NodePosition: {x: 482, y: 264}
+      NodePosition: {x: 1086, y: 341}
       Dependencies:
-      - {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
-    - SystemReference: {fileID: 11400000, guid: e8b4045ab457dba4f8c6c5031b4de4f7, type: 2}
-      NodePosition: {x: 152.66667, y: 264}
+      - {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
+    - SystemReference: {fileID: 11400000, guid: a2c5f951bc7bf904cb32976be936ea2d, type: 2}
+      NodePosition: {x: 741, y: 341}
       Dependencies: []
   _endOfFrameGroup:
     Nodes:
     - SystemReference: {fileID: 0}
-      NodePosition: {x: 0, y: 0}
+      NodePosition: {x: 545, y: 142}
       Dependencies: []
   _archetypeProducers:
   - {fileID: 11400000, guid: 2edfc5aa963d22c4e8ea8e4795d2d3e8, type: 2}
@@ -591,7 +581,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _world: {fileID: 899697411}
-  EntitiesToGenerate: 10000
+  EntitiesToGenerate: 1000
   SpeedMultiplier: 1
 --- !u!1 &993198345
 GameObject:

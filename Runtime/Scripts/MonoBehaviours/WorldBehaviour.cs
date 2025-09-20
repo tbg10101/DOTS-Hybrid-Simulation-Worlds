@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Software10101.DOTS.Archetypes;
 using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
@@ -55,7 +56,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             InitializationSystemGroup startOfFrameGroup =
                 AddSystemToCurrentPlayerLoop(new InitializationSystemGroup(), typeof(Initialization));
             foreach (SystemTypeReference systemTypeReference in _startOfFrameGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, startOfFrameGroup).SetCreator(systemTypeReference);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, startOfFrameGroup, systemTypeReference);
             }
             AddSystemToGroup(new PostStartOfFrameEntityCommandBufferSystem(), startOfFrameGroup);
 
@@ -64,12 +65,12 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystemToGroup(new SimulationDestroySystem(), simGroup);
             SimulationResetSystemGroup simResetGroup = AddSystemToGroup(new SimulationResetSystemGroup(), simGroup);
             foreach (SystemTypeReference systemTypeReference in _simResetGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup).SetCreator(systemTypeReference);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup, systemTypeReference);
             }
             AddSystemToGroup(new PreSimulationEntityCommandBufferSystem(), simGroup);
             SimulationMainSystemGroup mainSimGroup = AddSystemToGroup(new SimulationMainSystemGroup(), simGroup);
             foreach (SystemTypeReference systemTypeReference in _mainSimGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, mainSimGroup).SetCreator(systemTypeReference);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, mainSimGroup, systemTypeReference);
             }
             AddSystemToGroup(new PostSimulationEntityCommandBufferSystem(), simGroup);
 
@@ -82,7 +83,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             PresentationPreUpdateSystemGroup preUpdateGroup =
                 AddSystemToGroup(new PresentationPreUpdateSystemGroup(), presentationGroup);
             foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup).SetCreator(systemTypeReference);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup, systemTypeReference);
             }
             AddSystemToGroup(new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
             AddSystemToGroup(new ManagedMonoBehaviourUpdateSystem(), presentationGroup);
@@ -90,7 +91,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             PresentationPostUpdateSystemGroup postUpdateGroup =
                 AddSystemToGroup(new PresentationPostUpdateSystemGroup(), presentationGroup);
             foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, postUpdateGroup).SetCreator(systemTypeReference);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, postUpdateGroup, systemTypeReference);
             }
             AddSystemToGroup(new PostPresentationEntityCommandBufferSystem(), presentationGroup);
             AddSystemToGroup(new PresentationDestroySystem(), presentationGroup);
@@ -98,7 +99,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystemToGroup(new EndOfFrameEntityCommandBufferSystem(), presentationGroup);
             EndOfFrameSystemGroup endOfFrameGroup = AddSystemToGroup(new EndOfFrameSystemGroup(), presentationGroup);
             foreach (SystemTypeReference systemTypeReference in _endOfFrameGroup.GetExecutionOrder()) {
-                CreateSystemIntoGroup(systemTypeReference.SystemType, endOfFrameGroup).SetCreator(systemTypeReference);
+                CreateSystemIntoGroup(systemTypeReference.SystemType, endOfFrameGroup, systemTypeReference);
             }
 
             ArchetypeProducer[] initialArchetypeProducers = _archetypeProducers.ToArray();
@@ -140,10 +141,26 @@ namespace Software10101.DOTS.MonoBehaviours {
             return system;
         }
 
-        private ReferenceCreatedSystemBase CreateSystemIntoGroup(Type systemType, ComponentSystemGroup group) {
-            ReferenceCreatedSystemBase system = _world.CreateSystemManaged(systemType) as ReferenceCreatedSystemBase;
-            group.AddSystemToUpdateList(system);
-            return system;
+        private void CreateSystemIntoGroup(Type systemType, ComponentSystemGroup group, SystemTypeReference systemTypeReference) {
+            if (systemType.IsSubclassOf(typeof(ReferenceCreatedSystemBase))) {
+                ReferenceCreatedSystemBase system = _world.CreateSystemManaged(systemType) as ReferenceCreatedSystemBase;
+                system.SetCreator(systemTypeReference);
+                group.AddSystemToUpdateList(system);
+            } else if (systemType.GetInterfaces().Contains(typeof(ISystem))) {
+                ISystemTypeReference iSystemTypeReference = (ISystemTypeReference)systemTypeReference;
+                SystemHandle sh = _world.CreateSystem(systemType);
+
+                // MethodInfo setComponentDataMethod = typeof(EntityManager).GetMethod("SetComponentData");
+                // MethodInfo setComponentDataGenericMethod = setComponentDataMethod.MakeGenericMethod(iSystemTypeReference.ConfigDataType);
+                // setComponentDataGenericMethod.Invoke(EntityManager, new object[] { sh, iSystemTypeReference.GetConfigData() });
+
+                iSystemTypeReference.SetConfig(EntityManager, sh);
+
+                group.AddSystemToUpdateList(sh);
+            } else {
+                throw new ArgumentException(
+                    $"System type must be subclass of ReferenceCreatedSystemBase or ISystem: {systemType.FullName}");
+            }
         }
 
         public int AddArchetypeProducer(ArchetypeProducer archetypeProducer) {

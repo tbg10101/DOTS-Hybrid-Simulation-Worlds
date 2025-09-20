@@ -8,7 +8,7 @@ using Random = Unity.Mathematics.Random;
 namespace Software10101.DOTS.Example.MonoBehaviours {
     public class GameBootstrapper : MonoBehaviour {
         [SerializeField]
-        public WorldBehaviour _world;
+        private WorldBehaviour _world;
 
         public ushort EntitiesToGenerate = 1;
         public float SpeedMultiplier = 1.0f;
@@ -20,7 +20,12 @@ namespace Software10101.DOTS.Example.MonoBehaviours {
             for (ushort i = 0; i < EntitiesToGenerate; i++) {
                 (Entity entity, EntityCommandBuffer ecb) = _world.Create(0);
                 ecb.SetComponent(entity, new VelocityComponentData {
-                    Value = SpeedMultiplier * math.normalize(2.0f * (r.NextFloat3() - 0.5f)) * r.NextFloat()
+                    Value = SpeedMultiplier * math.normalize(2.0f * (r.NextFloat3() - 0.5f)) * r.NextFloat(),
+                });
+                ecb.SetComponent(entity, new RotationComponentData {
+                    PreviousValue = quaternion.identity,
+                    PresentationValue = quaternion.identity,
+                    NextValue = quaternion.identity,
                 });
             }
         }

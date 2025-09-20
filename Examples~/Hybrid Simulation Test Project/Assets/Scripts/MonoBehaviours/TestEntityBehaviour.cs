@@ -19,8 +19,9 @@ namespace Software10101.DOTS.Example.MonoBehaviours {
         protected override void OnUpdate() {
             base.OnUpdate();
 
-            // Profiler.BeginSample("Apply Position");
+            // Profiler.BeginSample("Apply Pose");
             transform.localPosition = EntityManager.GetComponentData<PositionComponentData>(Entity).PresentationValue;
+            transform.localRotation = EntityManager.GetComponentData<RotationComponentData>(Entity).PresentationValue;
             // Profiler.EndSample();
 
             if (DestroyMe) {

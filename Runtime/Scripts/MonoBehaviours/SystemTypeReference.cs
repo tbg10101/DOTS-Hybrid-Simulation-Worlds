@@ -62,4 +62,24 @@ namespace Software10101.DOTS.MonoBehaviours {
             OnCreatorSet();
         }
     }
+
+    public interface ISystemTypeReference {
+        // Type ConfigDataType {
+        //     get;
+        // }
+        //
+        // IComponentData GetConfigData();
+
+        void SetConfig(EntityManager entityManager, SystemHandle systemHandle);
+    }
+
+    // ReSharper disable once InconsistentNaming
+    public abstract class ISystemTypeReference<T/*, TC*/> : SystemTypeReference, ISystemTypeReference
+            where T : ISystem
+            /* where TC : unmanaged, IComponentData*/ {
+        public override Type SystemType => typeof(T);
+        // public Type ConfigDataType => typeof(TC);
+        // public abstract IComponentData GetConfigData();
+        public abstract void SetConfig(EntityManager entityManager, SystemHandle systemHandle);
+    }
 }
