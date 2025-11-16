@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Software10101.DOTS.Archetypes;
 using Software10101.DOTS.Data;
 using Software10101.DOTS.Systems;
@@ -149,10 +148,6 @@ namespace Software10101.DOTS.MonoBehaviours {
             } else if (systemType.GetInterfaces().Contains(typeof(ISystem))) {
                 ISystemTypeReference iSystemTypeReference = (ISystemTypeReference)systemTypeReference;
                 SystemHandle sh = _world.CreateSystem(systemType);
-
-                // MethodInfo setComponentDataMethod = typeof(EntityManager).GetMethod("SetComponentData");
-                // MethodInfo setComponentDataGenericMethod = setComponentDataMethod.MakeGenericMethod(iSystemTypeReference.ConfigDataType);
-                // setComponentDataGenericMethod.Invoke(EntityManager, new object[] { sh, iSystemTypeReference.GetConfigData() });
 
                 iSystemTypeReference.SetConfig(EntityManager, sh);
 

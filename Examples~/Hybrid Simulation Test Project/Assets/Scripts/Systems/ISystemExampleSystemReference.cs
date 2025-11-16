@@ -1,5 +1,7 @@
-﻿using Software10101.DOTS.Example.Data;
+﻿using Software10101.DOTS.Data;
+using Software10101.DOTS.Example.Data;
 using Software10101.DOTS.MonoBehaviours;
+using Software10101.DOTS.Systems.EntityCommandBufferSystems;
 using Software10101.DOTS.Utils;
 using Unity.Burst;
 using Unity.Entities;
@@ -22,6 +24,8 @@ namespace Software10101.DOTS.Example.Systems {
                 GenerateTarget = _generateTarget,
             });
         }
+
+
     }
 
     // ReSharper disable once InconsistentNaming
@@ -32,7 +36,19 @@ namespace Software10101.DOTS.Example.Systems {
 
     // ReSharper disable once InconsistentNaming
     public partial struct ISystemExample : ISystem {
+        [BurstCompile]
+        public void OnCreate(ref SystemState state) {
+            state.RequireForUpdate<EntityCommandBufferSystemSingleton<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>>();
+        }
+
+        [BurstCompile]
         public void OnUpdate(ref SystemState state) {
+            EntityCommandBuffer.ParallelWriter ecb = SystemAPI
+                .GetSingleton<EntityCommandBufferSystemSingleton<PostManagedMonoBehaviourUpdateEntityCommandBufferSystem>>()
+                .CreateCommandBuffer(state.WorldUnmanaged)
+                .AsParallelWriter();
+
+            // optionally do this only once
             ISystemExampleConfigData config = state.EntityManager.GetComponentData<ISystemExampleConfigData>(state.SystemHandle);
 
             float3 target = config.GenerateTarget
@@ -40,6 +56,7 @@ namespace Software10101.DOTS.Example.Systems {
                 : config.Target;
 
             new ExampleJob {
+                Ecb = ecb,
                 Target = target,
             }.ScheduleParallel();
         }
@@ -49,9 +66,15 @@ namespace Software10101.DOTS.Example.Systems {
     public partial struct ExampleJob : IJobEntity {
         private static readonly float3 Up = new(0.0f, 1.0f, 0.0f);
 
+        public EntityCommandBuffer.ParallelWriter Ecb;
         public float3 Target;
 
-        public void Execute(ref RotationComponentData rotationData, in PositionComponentData positionData) {
+        private void Execute(
+            [ChunkIndexInQuery] int sortKey,
+            Entity entity,
+            ref RotationComponentData rotationData,
+            in PositionComponentData positionData
+        ) {
             rotationData.PreviousValue = rotationData.NextValue;
 
             quaternion newRotation = quaternion.LookRotation(positionData.NextValue - Target, Up);
@@ -61,6 +84,10 @@ namespace Software10101.DOTS.Example.Systems {
             }
 
             rotationData.NextValue = newRotation;
+
+            if (sortKey == 0) {
+                Ecb.SetName(sortKey, entity, "this entity is in chunk 0 of the ExampleJob query");
+            }
         }
     }
 }
