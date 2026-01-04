@@ -4,7 +4,7 @@ using UnityEngine.Profiling;
 
 namespace Software10101.DOTS.MonoBehaviours {
     public abstract class ManagedMonoBehaviour : MonoBehaviour {
-        private static readonly List<ManagedMonoBehaviour> Instances = new List<ManagedMonoBehaviour>();
+        private static readonly List<ManagedMonoBehaviour> Instances = new();
 
         private bool _destroyed = false;
 
@@ -56,7 +56,7 @@ namespace Software10101.DOTS.MonoBehaviours {
 
         internal static void DestroyAll() {
             while (Instances.Count > 0) {
-                Instances[Instances.Count - 1].Destroy();
+                Instances[^1].Destroy();
             }
         }
     }

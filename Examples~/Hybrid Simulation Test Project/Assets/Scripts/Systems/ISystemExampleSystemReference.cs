@@ -24,8 +24,6 @@ namespace Software10101.DOTS.Example.Systems {
                 GenerateTarget = _generateTarget,
             });
         }
-
-
     }
 
     // ReSharper disable once InconsistentNaming
@@ -35,6 +33,7 @@ namespace Software10101.DOTS.Example.Systems {
     }
 
     // ReSharper disable once InconsistentNaming
+    [BurstCompile]
     public partial struct ISystemExample : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
@@ -69,6 +68,7 @@ namespace Software10101.DOTS.Example.Systems {
         public EntityCommandBuffer.ParallelWriter Ecb;
         public float3 Target;
 
+        [BurstCompile]
         private void Execute(
             [ChunkIndexInQuery] int sortKey,
             Entity entity,

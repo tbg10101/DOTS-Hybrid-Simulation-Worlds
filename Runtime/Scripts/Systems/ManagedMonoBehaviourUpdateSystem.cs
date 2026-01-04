@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Software10101.DOTS.MonoBehaviours;
 using Software10101.DOTS.Systems.EntityCommandBufferSystems;
 using Unity.Collections;
@@ -8,38 +7,58 @@ using Unity.Jobs;
 namespace Software10101.DOTS.Systems {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
     [UpdateAfter(typeof(PreManagedMonoBehaviourUpdateEntityCommandBufferSystem))]
-    internal partial class ManagedMonoBehaviourUpdateSystem : SystemBase {
-        protected override void OnUpdate() {
-            JobHandleExtensions.CompleteJobList();
-            ManagedMonoBehaviour.DoUpdate();
-        }
-    }
+    internal partial struct ManagedMonoBehaviourUpdateSystem : ISystem {
+        private Entity _managedMonoBehaviourUpdateSingletonEntity;
 
-    public static class JobHandleExtensions {
-        private static readonly List<JobHandle> InternalJobList = new List<JobHandle>();
-
-        /// <summary>
-        /// Schedules this job to be completed just before the ManagedMonoBehaviours are updated.
-        /// </summary>
-        /// <param name="job">The job handle for the job to be completed.</param>
-        public static void CompleteBeforeManagedMonoBehaviourUpdates(this JobHandle job) {
-            InternalJobList.Add(job);
+        public void OnCreate(ref SystemState state) {
+            _managedMonoBehaviourUpdateSingletonEntity = state.EntityManager
+                .CreateSingletonBuffer<ManagedMonoBehaviourUpdateData>("Dependencies To Complete Before MonoBehaviors Update");
         }
 
-        internal static void CompleteJobList() {
-            int length = InternalJobList.Count;
+        public void OnUpdate(ref SystemState state) {
+            DynamicBuffer<ManagedMonoBehaviourUpdateData> buffer =
+                state.EntityManager.GetBuffer<ManagedMonoBehaviourUpdateData>(_managedMonoBehaviourUpdateSingletonEntity);
 
-            NativeArray<JobHandle> jobsArray = new NativeArray<JobHandle>(length, Allocator.Temp);
+            NativeList<JobHandle> dependenciesList = new(buffer.Length, Allocator.Temp);
 
-            for (int i = 0; i < length; i++) {
-                jobsArray[i] = InternalJobList[i];
+            for (int i = 0; i < buffer.Length; i++) {
+                dependenciesList.Add(buffer[i].Dependency);
             }
 
-            InternalJobList.Clear();
+            NativeArray<JobHandle> jobsArray = dependenciesList.ToArray(Allocator.Temp);
+
+            dependenciesList.Dispose();
+
+            buffer.Clear();
 
             JobHandle.CompleteAll(jobsArray);
 
             jobsArray.Dispose();
+
+            ManagedMonoBehaviour.DoUpdate();
         }
+
+        public void OnDestroy(ref SystemState state) {
+            state.EntityManager.DestroyEntity(_managedMonoBehaviourUpdateSingletonEntity);
+            _managedMonoBehaviourUpdateSingletonEntity = Entity.Null;
+        }
+    }
+
+    public static class JobHandleExtensions {
+        /// <summary>
+        /// Schedules this job to be completed just before the ManagedMonoBehaviours are updated.
+        /// </summary>
+        public static void CompleteBeforeManagedMonoBehaviourUpdates(this JobHandle job, ref SystemState state) {
+            DynamicBuffer<ManagedMonoBehaviourUpdateData> buffer = state
+                .GetEntityQuery(ComponentType.ReadWrite<ManagedMonoBehaviourUpdateData>())
+                .GetSingletonBuffer<ManagedMonoBehaviourUpdateData>();
+
+            buffer.Add(new ManagedMonoBehaviourUpdateData { Dependency = job});
+        }
+    }
+
+    [InternalBufferCapacity(1)]
+    public struct ManagedMonoBehaviourUpdateData : IBufferElementData {
+        public JobHandle Dependency;
     }
 }

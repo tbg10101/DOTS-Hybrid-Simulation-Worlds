@@ -51,7 +51,7 @@ namespace Software10101.DOTS.MonoBehaviours {
         private void Awake() {
             _world = new World(name, _flags);
 
-            // set up initialization group
+            // set up initialization systems
             InitializationSystemGroup startOfFrameGroup =
                 AddSystemToCurrentPlayerLoop(new InitializationSystemGroup(), typeof(Initialization));
             foreach (SystemTypeReference systemTypeReference in _startOfFrameGroup.GetExecutionOrder()) {
@@ -61,7 +61,7 @@ namespace Software10101.DOTS.MonoBehaviours {
 
             // set up simulation systems
             SimulationSystemGroup simGroup = AddSystemToCurrentPlayerLoop(new SimulationSystemGroup(), typeof(FixedUpdate));
-            AddSystemToGroup(new SimulationDestroySystem(), simGroup);
+            AddSystemToGroup<SimulationDestroySystem>(simGroup);
             SimulationResetSystemGroup simResetGroup = AddSystemToGroup(new SimulationResetSystemGroup(), simGroup);
             foreach (SystemTypeReference systemTypeReference in _simResetGroup.GetExecutionOrder()) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup, systemTypeReference);
@@ -85,7 +85,7 @@ namespace Software10101.DOTS.MonoBehaviours {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup, systemTypeReference);
             }
             AddSystemToGroup(new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
-            AddSystemToGroup(new ManagedMonoBehaviourUpdateSystem(), presentationGroup);
+            AddSystemToGroup<ManagedMonoBehaviourUpdateSystem>(presentationGroup);
             AddSystemToGroup(new PostManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
             PresentationPostUpdateSystemGroup postUpdateGroup =
                 AddSystemToGroup(new PresentationPostUpdateSystemGroup(), presentationGroup);
@@ -138,6 +138,13 @@ namespace Software10101.DOTS.MonoBehaviours {
             parent.AddSystemToUpdateList(system);
 
             return system;
+        }
+
+        private SystemHandle AddSystemToGroup<T>(ComponentSystemGroup parent) where T : ISystem {
+            SystemHandle sh = _world.CreateSystem(typeof(T));
+            parent.AddSystemToUpdateList(sh);
+
+            return sh;
         }
 
         private void CreateSystemIntoGroup(Type systemType, ComponentSystemGroup group, SystemTypeReference systemTypeReference) {

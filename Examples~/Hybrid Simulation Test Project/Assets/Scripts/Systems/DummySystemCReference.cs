@@ -1,6 +1,7 @@
 using Software10101.DOTS.Example.Data;
 using Software10101.DOTS.MonoBehaviours;
 using Software10101.DOTS.Utils;
+using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
 
@@ -10,13 +11,17 @@ namespace Software10101.DOTS.Example.Systems {
 
     public partial class DummySystemC : ReferenceCreatedSystemBase<DummySystemCReference> {
         protected override void OnUpdate() {
-            float dt = TimeUtil.FixedDeltaTime;
+            new DummyJobC {
+                DeltaTime = TimeUtil.FixedDeltaTime
+            }.ScheduleParallel();
+        }
+    }
 
-            Entities
-                .ForEach((ref PositionComponentData component) => {
-                    component.NextValue += dt * 0.0f;
-                })
-                .ScheduleParallel();
+    [BurstCompile]
+    public partial struct DummyJobC : IJobEntity {
+        public float DeltaTime;
+        private void Execute(ref PositionComponentData component) {
+            component.NextValue += DeltaTime * 0.0f;
         }
     }
 }

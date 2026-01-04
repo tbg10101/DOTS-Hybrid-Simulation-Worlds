@@ -1,6 +1,7 @@
 using Software10101.DOTS.Data;
 using Software10101.DOTS.MonoBehaviours;
 using Software10101.DOTS.Systems.EntityCommandBufferSystems;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -16,29 +17,30 @@ namespace Software10101.DOTS.Systems {
         }
 
         protected override void OnUpdate() {
-             EntityCommandBuffer ecb = World
-                 .GetExistingSystemManaged<EndOfFrameEntityCommandBufferSystem>()
-                 .CreateCommandBuffer();
+             EntityCommandBuffer ecb = SystemAPI
+                 .GetSingleton<EntityCommandBufferSystemSingleton<EndOfFrameEntityCommandBufferSystem>>()
+                 .CreateCommandBuffer(World.Unmanaged);
 
-             Entities
-                 .WithoutBurst()
-                 .ForEach((Entity entity, in SpawnPrefabComponentData initData) => {
-                    EntityMonoBehaviour instance = Object.Instantiate(_worldBehaviour.GetPrefab(initData.PrefabIndex));
+             using NativeArray<Entity> entities = GetEntityQuery(typeof(SpawnPrefabComponentData))
+                 .ToEntityArray(Allocator.Temp);
 
-                    instance.Entity = entity;
-                    instance.WorldBehaviour = _worldBehaviour;
+             foreach (Entity entity in entities) {
+                SpawnPrefabComponentData initData = EntityManager.GetComponentData<SpawnPrefabComponentData>(entity);
+                EntityMonoBehaviour instance = Object.Instantiate(_worldBehaviour.GetPrefab(initData.PrefabIndex));
+
+                instance.Entity = entity;
+                instance.WorldBehaviour = _worldBehaviour;
 
 #if UNITY_EDITOR && ENTITY_NAME_SYNC
-                    EntityManager.SetName(entity, instance.name);
+                EntityManager.SetName(entity, instance.name);
 #endif
 
-                    instance.OnPostInstantiate();
+                instance.OnPostInstantiate();
 
-                    // doing these in an ECB makes it a ton faster
-                    ecb.RemoveComponent<SpawnPrefabComponentData>(entity);
-                    ecb.AddComponent(entity, new GameObjectFlagComponentData());
-                 })
-                 .Run(); // must be on the main thread
+                // doing these in an ECB makes it a ton faster
+                ecb.RemoveComponent<SpawnPrefabComponentData>(entity);
+                ecb.AddComponent(entity, new GameObjectFlagComponentData());
+             }
         }
     }
 }
