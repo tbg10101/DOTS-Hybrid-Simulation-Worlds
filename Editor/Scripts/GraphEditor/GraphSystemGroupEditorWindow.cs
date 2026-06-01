@@ -37,7 +37,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                         .Select(path => new GraphSystemGroupGraphView.AddNodeAction(path, dropdownMenuAction => {
                             SystemTypeReference systemReference = AssetDatabase.LoadAssetAtPath<SystemTypeReference>(path);
                             _graphView.AddSystemNode(
-                                systemReference.GetInstanceID(),
+                                systemReference.GetEntityId(),
                                 dropdownMenuAction.eventInfo.localMousePosition);
                             PopulateNodeCreationChoices();
                         }))
@@ -69,6 +69,8 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             _graphView.SetEnabled(false);
 
             _toolbar = new();
+
+            _toolbar.Add(new ToolbarSpacer());
 
             _loadedLabel = new Label("");
             _toolbar.Add(_loadedLabel);
@@ -106,28 +108,28 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             WorldBehaviour editingWorldBehaviour = (WorldBehaviour)_serializedObject;
 
-            IEnumerable<int> existingInstanceIdsInGraph = _graphView.nodes
+            IEnumerable<EntityId> existingInstanceIdsInGraph = _graphView.nodes
                 .OfType<SystemNode>()
                 .Where(node => node.InstanceId.HasValue)
                 .Select(node => node.InstanceId.Value);
 
-            IEnumerable<int> existingInstanceIdsInWorld = editingWorldBehaviour.GetAllConfiguredSystemReferences()
+            IEnumerable<EntityId> existingInstanceIdsInWorld = editingWorldBehaviour.GetAllConfiguredSystemReferences()
                 .Where(entry => entry.Value != _propertyName)
-                .Select(entry => entry.Key.GetInstanceID());
+                .Select(entry => entry.Key.GetEntityId());
 
-            int[] existingInstanceIds = existingInstanceIdsInGraph
+            EntityId[] existingInstanceIds = existingInstanceIdsInGraph
                 .Union(existingInstanceIdsInWorld)
                 .ToArray();
 
-            NativeArray<int> existingInstanceIdsNative = new(existingInstanceIds.Length, Allocator.Persistent);
+            NativeArray<EntityId> existingInstanceIdsNative = new(existingInstanceIds.Length, Allocator.Persistent);
             for (int i = 0; i < existingInstanceIds.Length; i++) {
-                int existingInstanceId = existingInstanceIds[i];
+                EntityId existingInstanceId = existingInstanceIds[i];
                 existingInstanceIdsNative[i] = existingInstanceId;
             }
 
             NativeArray<GUID> existingNodeGuidsNative = new(existingInstanceIds.Length, Allocator.Persistent);
 
-            AssetDatabase.InstanceIDsToGUIDs(existingInstanceIdsNative, existingNodeGuidsNative);
+            AssetDatabase.EntityIdsToGUIDs(existingInstanceIdsNative, existingNodeGuidsNative);
 
             existingInstanceIdsNative.Dispose();
 
@@ -157,8 +159,8 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             }
 
             if (EditorPrefs.HasKey("graph_editing_world_instance")) {
-                int instanceId = EditorPrefs.GetInt("graph_editing_world_instance");
-                _serializedObject = (WorldBehaviour)EditorUtility.InstanceIDToObject(instanceId);
+                EntityId instanceId = EntityId.FromULong(ulong.Parse(EditorPrefs.GetString("graph_editing_world_instance")));
+                _serializedObject = (WorldBehaviour)EditorUtility.EntityIdToObject(instanceId);
 
                 if (_serializedObject) {
                     if (EditorPrefs.HasKey("graph_editing_save_callback")) {
@@ -207,7 +209,17 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             if (_serializedObject) {
                 string dirtyFlag = _graphView.Dirty ? " *" : "";
-                _loadedLabel.text = $"{_serializedObject.name} - {_propertyName}{dirtyFlag}";
+
+                string formattedPropertyName = _propertyName;
+
+                // remove underscore and capitalize field names
+                if (formattedPropertyName.StartsWith('_')) {
+                    formattedPropertyName = formattedPropertyName[1..];
+                }
+
+                formattedPropertyName = char.ToUpper(formattedPropertyName[0]) + formattedPropertyName[1..];
+
+                _loadedLabel.text = $"{_serializedObject.name} - {formattedPropertyName}{dirtyFlag}";
 
                 if (Application.isPlaying) {
                     _loadedLabel.text = $"{_loadedLabel.text} !! changes do not take effect in play mode !!";
@@ -225,7 +237,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             _serializedObject = serializedObject;
             _propertyName = propertyName;
 
-            EditorPrefs.SetInt("graph_editing_world_instance", serializedObject.GetInstanceID());
+            EditorPrefs.SetString("graph_editing_world_instance", EntityId.ToULong(serializedObject.GetEntityId()).ToString());
             EditorPrefs.SetString("graph_editing_save_callback", propertyName);
         }
 
@@ -252,20 +264,20 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             WorldBehaviour.GraphSystemGroupData graphData = WorldBehaviour.GraphSystemGroupData.CreateEmpty();
 
-            HashSet<int> rootDependencies = new();
-            Dictionary<int, HashSet<int>> dependencies = new();
+            HashSet<EntityId> rootDependencies = new();
+            Dictionary<EntityId, HashSet<EntityId>> dependencies = new();
 
             _graphView.edges.ForEach(edge => {
-                int? dependent = ((SystemNode)edge.input.node).InstanceId;
+                EntityId? dependent = ((SystemNode)edge.input.node).InstanceId;
                 // ReSharper disable once PossibleInvalidOperationException // not possible - root is never a dependency
-                int dependency = ((SystemNode)edge.output.node).InstanceId.Value;
+                EntityId dependency = ((SystemNode)edge.output.node).InstanceId.Value;
 
-                HashSet<int> existingDependencies;
+                HashSet<EntityId> existingDependencies;
 
                 if (!dependent.HasValue) {
                     existingDependencies = rootDependencies;
                 } else if (!dependencies.TryGetValue(dependent.Value, out existingDependencies)) {
-                    existingDependencies = new HashSet<int>();
+                    existingDependencies = new HashSet<EntityId>();
                     dependencies[dependent.Value] = existingDependencies;
                 }
 
@@ -276,17 +288,17 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                 .OfType<SystemNode>()
                 .Select(systemNode => new WorldBehaviour.GraphSystemGroupData.SystemNodeData(
                     systemNode.InstanceId.HasValue
-                        ? (SystemTypeReference)EditorUtility.InstanceIDToObject(systemNode.InstanceId.Value)
+                        ? (SystemTypeReference)EditorUtility.EntityIdToObject(systemNode.InstanceId.Value)
                         : null,
                     systemNode.GetPosition().position,
                     systemNode.InstanceId.HasValue
-                        ? dependencies.TryGetValue(systemNode.InstanceId.Value, out HashSet<int> nodeDependencies)
+                        ? dependencies.TryGetValue(systemNode.InstanceId.Value, out HashSet<EntityId> nodeDependencies)
                             ? nodeDependencies?
-                                .Select(instanceId => (SystemTypeReference)EditorUtility.InstanceIDToObject(instanceId))
+                                .Select(instanceId => (SystemTypeReference)EditorUtility.EntityIdToObject(instanceId))
                                 .ToArray() ?? Array.Empty<SystemTypeReference>()
                             : Array.Empty<SystemTypeReference>()
                         : rootDependencies
-                            .Select(instanceId => (SystemTypeReference)EditorUtility.InstanceIDToObject(instanceId))
+                            .Select(instanceId => (SystemTypeReference)EditorUtility.EntityIdToObject(instanceId))
                             .ToArray()))
                 .ToArray();
 
@@ -304,11 +316,11 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             WorldBehaviour.GraphSystemGroupData graphData = (WorldBehaviour.GraphSystemGroupData)graphDataRaw;
 
             SystemNode rootNode = null;
-            Dictionary<int, SystemNode> nodesByInstanceId = new();
+            Dictionary<EntityId, SystemNode> nodesByInstanceId = new();
 
             foreach (WorldBehaviour.GraphSystemGroupData.SystemNodeData systemNodeData in graphData.Nodes) {
                 if (systemNodeData.SystemReference) {
-                    int instanceId = systemNodeData.SystemReference.GetInstanceID();
+                    EntityId instanceId = systemNodeData.SystemReference.GetEntityId();
 
                     SystemNode node = _graphView.AddSystemNode(instanceId, systemNodeData.NodePosition);
                     nodesByInstanceId[instanceId] = node;
@@ -319,14 +331,14 @@ namespace Software10101.DOTS.Editor.GraphEditor {
 
             foreach (WorldBehaviour.GraphSystemGroupData.SystemNodeData systemNodeData in graphData.Nodes) {
                 if (systemNodeData.SystemReference) {
-                    SystemNode dependent = nodesByInstanceId[systemNodeData.SystemReference.GetInstanceID()];
+                    SystemNode dependent = nodesByInstanceId[systemNodeData.SystemReference.GetEntityId()];
 
                     foreach (SystemTypeReference systemTypeReference in systemNodeData.Dependencies) {
-                        _graphView.AddSystemDependency(dependent, nodesByInstanceId[systemTypeReference.GetInstanceID()]);
+                        _graphView.AddSystemDependency(dependent, nodesByInstanceId[systemTypeReference.GetEntityId()]);
                     }
                 } else {
                     foreach (SystemTypeReference systemTypeReference in systemNodeData.Dependencies) {
-                        _graphView.AddSystemDependency(rootNode, nodesByInstanceId[systemTypeReference.GetInstanceID()]);
+                        _graphView.AddSystemDependency(rootNode, nodesByInstanceId[systemTypeReference.GetEntityId()]);
                     }
                 }
             }
