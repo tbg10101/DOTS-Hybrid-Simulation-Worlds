@@ -7,6 +7,7 @@
 /Examples~/*/Temp
 /Examples~/*/UnityGenerated
 /Examples~/*/UserSettings
+/Examples~/*/mono_crash.*
 
 *.sln
 *.csproj
