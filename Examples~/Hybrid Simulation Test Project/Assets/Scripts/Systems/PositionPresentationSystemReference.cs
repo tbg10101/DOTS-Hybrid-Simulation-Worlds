@@ -13,13 +13,20 @@ namespace Software10101.DOTS.Example.Systems {
 
     [BurstCompile]
     public partial struct PositionPresentationSystem : ISystem {
+        private EntityQuery _managedMonoBehaviourUpdateQuery;
+
+        [BurstCompile]
+        public void OnCreate(ref SystemState state) {
+            _managedMonoBehaviourUpdateQuery = JobHandleExtensions.GetManagedMonoBehaviourUpdateQuery(ref state);
+        }
+
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
             new PositionPresentationJob {
                 PresentationFraction = TimeUtil.PresentationTimeFraction
             }.ScheduleParallel();
 
-            state.Dependency.CompleteBeforeManagedMonoBehaviourUpdates(ref state);
+            state.Dependency.CompleteBeforeManagedMonoBehaviourUpdates(_managedMonoBehaviourUpdateQuery);
         }
     }
 
