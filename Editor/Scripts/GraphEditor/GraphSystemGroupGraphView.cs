@@ -102,9 +102,9 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                 .ToList();
         }
 
-        public SystemNode AddSystemNode(int? instanceId, Vector2? position = null) {
+        public SystemNode AddSystemNode(EntityId? instanceId, Vector2? position = null) {
             SystemNode systemNode = new()  {
-                title = instanceId.HasValue ? EditorUtility.InstanceIDToObject(instanceId.Value).name : "End of Group",
+                title = instanceId.HasValue ? EditorUtility.EntityIdToObject(instanceId.Value).name : "End of Group",
                 InstanceId = instanceId
             };
 
@@ -124,7 +124,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
             systemNode.RefreshExpandedState();
             systemNode.RefreshPorts();
 
-            Vector2 viewportRect = viewTransform.position;
+            Vector2 viewportRect = contentViewContainer.resolvedStyle.translate; // viewTransform.position;
             Vector2 nodePosition = position ?? (-viewportRect + 0.5f * contentRect.size);
             systemNode.SetPosition(new Rect(nodePosition.x, nodePosition.y, 250, 100));
 
@@ -147,7 +147,7 @@ namespace Software10101.DOTS.Editor.GraphEditor {
                 evt.menu.AppendAction(
                     "Select System Reference Object",
                     _ => {
-                        Object objectToSelect = EditorUtility.InstanceIDToObject(systemNode.InstanceId.Value);
+                        Object objectToSelect = EditorUtility.EntityIdToObject(systemNode.InstanceId.Value);
                         Selection.SetActiveObjectWithContext(objectToSelect, null);
                     });
                 evt.menu.AppendSeparator();
