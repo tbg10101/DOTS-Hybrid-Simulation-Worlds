@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89214247f99654efa8514ff29fd31877, type: 3}
+  m_Name: Simulation World - Main Sim
+  m_EditorClassIdentifier: 10101Software.DOTS.HybridSimulation::Software10101.DOTS.MonoBehaviours.SystemGroupGraphAsset
+  _data:
+    Nodes:
+    - SystemReference: {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
+      NodePosition: {x: -42, y: 160}
+      Dependencies: []
+    - SystemReference: {fileID: 0}
+      NodePosition: {x: 391, y: 213}
+      Dependencies:
+      - {fileID: 11400000, guid: b55916dcf0ef8ed4a9c0aa675f60e447, type: 2}
+      - {fileID: 11400000, guid: 59f656d1cbea902418fca75263702495, type: 2}
+    - SystemReference: {fileID: 11400000, guid: 59f656d1cbea902418fca75263702495, type: 2}
+      NodePosition: {x: -58, y: 342}
+      Dependencies: []

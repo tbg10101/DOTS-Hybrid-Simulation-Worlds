@@ -1,0 +1,217 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 61
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 12501, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: Simulation World - Sim Reset
+  m_EditorClassIdentifier: UnityEditor.dll::Unity.GraphToolkit.Editor.Implementation.GraphObjectImp
+  m_GraphModel:
+    rid: 7666763206097109259
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 7666763206097109259
+      type: {class: GraphModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Guid:
+          m_Value0: 4245683491076830644
+          m_Value1: 10922631361865301071
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: b4f55ffaa3b2eb3a4fbc85605afb9497
+        m_Name: 
+        m_GraphNodeModels:
+        - rid: 7666763206097109262
+        - rid: 7666763206097109265
+        m_GraphWireModels:
+        - rid: 7666763206097109269
+        m_GraphStickyNoteModels: []
+        m_GraphPlacematModels: []
+        m_GraphVariableModels: []
+        m_GraphPortalModels: []
+        m_SectionModels:
+        - rid: 7666763206097109260
+        m_LocalSubgraphs: []
+        m_LastKnownBounds:
+          serializedVersion: 2
+          x: -535
+          y: -33
+          width: 705
+          height: 121
+        m_GraphElementMetaData:
+        - m_Guid:
+            m_Value0: 6595903459071408772
+            m_Value1: 3444191497101243881
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: 84bab8da3f5b895be9f52323eb39cc2f
+          m_Category: 0
+          m_Index: 0
+        - m_Guid:
+            m_Value0: 12499170577505798851
+            m_Value1: 13752080695964223650
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: c34a3fb36af975ada24874058834d9be
+          m_Category: 0
+          m_Index: 1
+        - m_Guid:
+            m_Value0: 11904706332714180901
+            m_Value1: 7948059095024853222
+          m_HashGuid:
+            serializedVersion: 2
+            Hash: 25a1c5f4550336a5e6e0c4e4a22d4d6e
+          m_Category: 2
+          m_Index: 0
+        m_EntryPoint:
+          rid: 7666763206097109262
+        m_Graph:
+          rid: 7666763206097109261
+    - rid: 7666763206097109260
+      type: {class: SectionModel, ns: Unity.GraphToolkit.Editor, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Guid:
+          m_Value0: 5093401767775410885
+          m_Value1: 16878374769440560388
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: c59a99faeb65af4604956b666d083cea
+        m_Version: 2
+        m_Items: []
+        m_Title: 
+    - rid: 7666763206097109261
+      type: {class: SystemGroupGraph, ns: Software10101.DOTS.Editor.GraphEditor, asm: 10101Software.DOTS.HybridSimulation.Editor}
+      data: 
+    - rid: 7666763206097109262
+      type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Guid:
+          m_Value0: 6595903459071408772
+          m_Value1: 3444191497101243881
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 84bab8da3f5b895be9f52323eb39cc2f
+        m_Version: 2
+        m_Position: {x: 0, y: 0}
+        m_Title: 
+        m_Tooltip: 
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - Depends On
+          m_ValueList:
+          - rid: 7666763206097109263
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0, g: 0, b: 0, a: 0}
+          m_HasUserColor: 0
+        m_Node:
+          rid: 7666763206097109264
+    - rid: 7666763206097109263
+      type: {class: 'Constant`1[[Software10101.DOTS.MonoBehaviours.SystemTypeReference, 10101Software.DOTS.HybridSimulation]]', ns: Unity.GraphToolkit.Editor, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Value: {fileID: 0}
+    - rid: 7666763206097109264
+      type: {class: EndOfGroupNode, ns: Software10101.DOTS.Editor.GraphEditor, asm: 10101Software.DOTS.HybridSimulation.Editor}
+      data: 
+    - rid: 7666763206097109265
+      type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Guid:
+          m_Value0: 12499170577505798851
+          m_Value1: 13752080695964223650
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: c34a3fb36af975ada24874058834d9be
+        m_Version: 2
+        m_Position: {x: -535, y: -33.002495}
+        m_Title: 
+        m_Tooltip: 
+        m_NodePreviewModel:
+          rid: -2
+        m_State: 0
+        m_InputConstantsById:
+          m_KeyList:
+          - __option_System
+          - Depends On
+          m_ValueList:
+          - rid: 7666763206097109266
+          - rid: 7666763206097109267
+        m_InputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_OutputPortInfos:
+          expandedPortsById:
+            m_KeyList: []
+            m_ValueList: 
+        m_Collapsed: 0
+        m_CurrentModeIndex: 0
+        m_ElementColor:
+          m_Color: {r: 0, g: 0, b: 0, a: 0}
+          m_HasUserColor: 0
+        m_Node:
+          rid: 7666763206097109268
+    - rid: 7666763206097109266
+      type: {class: 'Constant`1[[Software10101.DOTS.MonoBehaviours.SystemTypeReference, 10101Software.DOTS.HybridSimulation]]', ns: Unity.GraphToolkit.Editor, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Value: {fileID: 11400000, guid: e01661ff769361b4b937408c043acd78, type: 2}
+    - rid: 7666763206097109267
+      type: {class: 'Constant`1[[Software10101.DOTS.MonoBehaviours.SystemTypeReference, 10101Software.DOTS.HybridSimulation]]', ns: Unity.GraphToolkit.Editor, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Value: {fileID: 0}
+    - rid: 7666763206097109268
+      type: {class: SystemReferenceNode, ns: Software10101.DOTS.Editor.GraphEditor, asm: 10101Software.DOTS.HybridSimulation.Editor}
+      data: 
+    - rid: 7666763206097109269
+      type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: UnityEditor.GraphToolkitModule}
+      data:
+        m_Guid:
+          m_Value0: 11904706332714180901
+          m_Value1: 7948059095024853222
+        m_HashGuid:
+          serializedVersion: 2
+          Hash: 25a1c5f4550336a5e6e0c4e4a22d4d6e
+        m_Version: 2
+        m_FromPortReference:
+          m_NodeModelGuid:
+            m_Value0: 12499170577505798851
+            m_Value1: 13752080695964223650
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: c34a3fb36af975ada24874058834d9be
+          m_UniqueId: Dependents
+          m_PortDirection: 2
+          m_PortOrientation: 0
+          m_Title: Dependents
+        m_ToPortReference:
+          m_NodeModelGuid:
+            m_Value0: 6595903459071408772
+            m_Value1: 3444191497101243881
+          m_NodeModelHashGuid:
+            serializedVersion: 2
+            Hash: 84bab8da3f5b895be9f52323eb39cc2f
+          m_UniqueId: Depends On
+          m_PortDirection: 1
+          m_PortOrientation: 0
+          m_Title: Depends On

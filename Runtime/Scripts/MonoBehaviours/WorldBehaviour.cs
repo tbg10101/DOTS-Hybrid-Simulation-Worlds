@@ -26,21 +26,42 @@ namespace Software10101.DOTS.MonoBehaviours {
 
         [Tooltip("Also know as the Initialization group.")]
         [SerializeField]
+        private SystemGroupGraphAsset _startOfFrameGraph = null;
+
+        [SerializeField]
+        private SystemGroupGraphAsset _simResetGraph = null;
+
+        [SerializeField]
+        private SystemGroupGraphAsset _mainSimGraph = null;
+
+        [SerializeField]
+        private SystemGroupGraphAsset _presentationPreUpdateGraph = null;
+
+        [SerializeField]
+        private SystemGroupGraphAsset _presentationPostUpdateGraph = null;
+
+        [SerializeField]
+        private SystemGroupGraphAsset _endOfFrameGraph = null;
+
+        // Legacy embedded group data, retained so the migration utility (Migrate System Group Graphs) can convert
+        // pre-6.5 scenes into SystemGroupGraphAsset references. These fields are no longer read at runtime and will be
+        // removed in a future version once existing content has been migrated.
+        [SerializeField, HideInInspector]
         private GraphSystemGroupData _startOfFrameGroup = GraphSystemGroupData.CreateEmpty();
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private GraphSystemGroupData _simResetGroup = GraphSystemGroupData.CreateEmpty();
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private GraphSystemGroupData _mainSimGroup = GraphSystemGroupData.CreateEmpty();
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private GraphSystemGroupData _presentationPreUpdateGroup = GraphSystemGroupData.CreateEmpty();
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private GraphSystemGroupData _presentationPostUpdateGroup = GraphSystemGroupData.CreateEmpty();
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private GraphSystemGroupData _endOfFrameGroup = GraphSystemGroupData.CreateEmpty();
 
         [SerializeField]
@@ -54,7 +75,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             // set up initialization systems
             InitializationSystemGroup startOfFrameGroup =
                 AddSystemToCurrentPlayerLoop(new InitializationSystemGroup(), typeof(Initialization));
-            foreach (SystemTypeReference systemTypeReference in _startOfFrameGroup.GetExecutionOrder()) {
+            foreach (SystemTypeReference systemTypeReference in GetExecutionOrder(_startOfFrameGraph)) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, startOfFrameGroup, systemTypeReference);
             }
             AddSystemToGroup(new PostStartOfFrameEntityCommandBufferSystem(), startOfFrameGroup);
@@ -63,12 +84,12 @@ namespace Software10101.DOTS.MonoBehaviours {
             SimulationSystemGroup simGroup = AddSystemToCurrentPlayerLoop(new SimulationSystemGroup(), typeof(FixedUpdate));
             AddSystemToGroup<SimulationDestroySystem>(simGroup);
             SimulationResetSystemGroup simResetGroup = AddSystemToGroup(new SimulationResetSystemGroup(), simGroup);
-            foreach (SystemTypeReference systemTypeReference in _simResetGroup.GetExecutionOrder()) {
+            foreach (SystemTypeReference systemTypeReference in GetExecutionOrder(_simResetGraph)) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, simResetGroup, systemTypeReference);
             }
             AddSystemToGroup(new PreSimulationEntityCommandBufferSystem(), simGroup);
             SimulationMainSystemGroup mainSimGroup = AddSystemToGroup(new SimulationMainSystemGroup(), simGroup);
-            foreach (SystemTypeReference systemTypeReference in _mainSimGroup.GetExecutionOrder()) {
+            foreach (SystemTypeReference systemTypeReference in GetExecutionOrder(_mainSimGraph)) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, mainSimGroup, systemTypeReference);
             }
             AddSystemToGroup(new PostSimulationEntityCommandBufferSystem(), simGroup);
@@ -81,7 +102,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystemToGroup(new PrePresentationEntityCommandBufferSystem(), presentationGroup);
             PresentationPreUpdateSystemGroup preUpdateGroup =
                 AddSystemToGroup(new PresentationPreUpdateSystemGroup(), presentationGroup);
-            foreach (SystemTypeReference systemTypeReference in _presentationPreUpdateGroup.GetExecutionOrder()) {
+            foreach (SystemTypeReference systemTypeReference in GetExecutionOrder(_presentationPreUpdateGraph)) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, preUpdateGroup, systemTypeReference);
             }
             AddSystemToGroup(new PreManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
@@ -89,7 +110,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystemToGroup(new PostManagedMonoBehaviourUpdateEntityCommandBufferSystem(), presentationGroup);
             PresentationPostUpdateSystemGroup postUpdateGroup =
                 AddSystemToGroup(new PresentationPostUpdateSystemGroup(), presentationGroup);
-            foreach (SystemTypeReference systemTypeReference in _presentationPostUpdateGroup.GetExecutionOrder()) {
+            foreach (SystemTypeReference systemTypeReference in GetExecutionOrder(_presentationPostUpdateGraph)) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, postUpdateGroup, systemTypeReference);
             }
             AddSystemToGroup(new PostPresentationEntityCommandBufferSystem(), presentationGroup);
@@ -97,7 +118,7 @@ namespace Software10101.DOTS.MonoBehaviours {
             AddSystemToGroup(new PrefabSpawnSystem(this), presentationGroup);
             AddSystemToGroup(new EndOfFrameEntityCommandBufferSystem(), presentationGroup);
             EndOfFrameSystemGroup endOfFrameGroup = AddSystemToGroup(new EndOfFrameSystemGroup(), presentationGroup);
-            foreach (SystemTypeReference systemTypeReference in _endOfFrameGroup.GetExecutionOrder()) {
+            foreach (SystemTypeReference systemTypeReference in GetExecutionOrder(_endOfFrameGraph)) {
                 CreateSystemIntoGroup(systemTypeReference.SystemType, endOfFrameGroup, systemTypeReference);
             }
 
@@ -110,12 +131,16 @@ namespace Software10101.DOTS.MonoBehaviours {
         }
 
         private void Reset() {
-            _startOfFrameGroup = GraphSystemGroupData.CreateEmpty();
-            _simResetGroup = GraphSystemGroupData.CreateEmpty();
-            _mainSimGroup = GraphSystemGroupData.CreateEmpty();
-            _presentationPreUpdateGroup = GraphSystemGroupData.CreateEmpty();
-            _presentationPostUpdateGroup = GraphSystemGroupData.CreateEmpty();
-            _endOfFrameGroup = GraphSystemGroupData.CreateEmpty();
+            _startOfFrameGraph = null;
+            _simResetGraph = null;
+            _mainSimGraph = null;
+            _presentationPreUpdateGraph = null;
+            _presentationPostUpdateGraph = null;
+            _endOfFrameGraph = null;
+        }
+
+        private static IEnumerable<SystemTypeReference> GetExecutionOrder(SystemGroupGraphAsset graph) {
+            return graph ? graph.GetExecutionOrder() : Enumerable.Empty<SystemTypeReference>();
         }
 
         private void OnDestroy() {
@@ -204,17 +229,21 @@ namespace Software10101.DOTS.MonoBehaviours {
         public IReadOnlyDictionary<SystemTypeReference, string> GetAllConfiguredSystemReferences() {
             Dictionary<SystemTypeReference, string> result = new();
 
-            Dictionary<GraphSystemGroupData, string> groups = new() {
-                { _startOfFrameGroup, nameof(_startOfFrameGroup) },
-                { _simResetGroup, nameof(_simResetGroup) },
-                { _mainSimGroup, nameof(_mainSimGroup) },
-                { _presentationPreUpdateGroup, nameof(_presentationPreUpdateGroup) },
-                { _presentationPostUpdateGroup, nameof(_presentationPostUpdateGroup) },
-                { _endOfFrameGroup, nameof(_endOfFrameGroup) },
+            (SystemGroupGraphAsset graph, string groupName)[] groups = {
+                (_startOfFrameGraph, nameof(_startOfFrameGraph)),
+                (_simResetGraph, nameof(_simResetGraph)),
+                (_mainSimGraph, nameof(_mainSimGraph)),
+                (_presentationPreUpdateGraph, nameof(_presentationPreUpdateGraph)),
+                (_presentationPostUpdateGraph, nameof(_presentationPostUpdateGraph)),
+                (_endOfFrameGraph, nameof(_endOfFrameGraph)),
             };
 
-            foreach ((GraphSystemGroupData graphSystemGroupData, string groupName) in groups) {
-                foreach (GraphSystemGroupData.SystemNodeData systemNodeData in graphSystemGroupData.Nodes) {
+            foreach ((SystemGroupGraphAsset graph, string groupName) in groups) {
+                if (!graph) {
+                    continue;
+                }
+
+                foreach (GraphSystemGroupData.SystemNodeData systemNodeData in graph.Nodes) {
                     if (systemNodeData.SystemReference) {
                         result.Add(systemNodeData.SystemReference, groupName);
                     }
@@ -244,130 +273,6 @@ namespace Software10101.DOTS.MonoBehaviours {
             internal EntityCommandBuffer EntityCommandBuffer;
 
             internal CreationBufferToken() { }
-        }
-
-        [Serializable]
-        public struct GraphSystemGroupData : IEquatable<GraphSystemGroupData> {
-            public SystemNodeData[] Nodes;
-
-            public static GraphSystemGroupData CreateEmpty() {
-                GraphSystemGroupData newData = new() {
-                    Nodes = new []{ new SystemNodeData() }
-                };
-
-                return newData;
-            }
-
-            public IEnumerable<SystemTypeReference> GetExecutionOrder() {
-                SystemNodeData root = default;
-                Dictionary<SystemTypeReference, SystemNodeData> nodesForSystemReferences = Nodes
-                    .Where(node => {
-                        if (ReferenceEquals(node.SystemReference, null)) {
-                            root = node;
-                            return false;
-                        }
-
-                        bool nodeContentsValid = node.SystemReference;
-                        if (!nodeContentsValid) {
-                            Debug.LogWarning("System graph has missing system references!");
-                        }
-
-                        return nodeContentsValid;
-                    })
-                    .ToDictionary(node => node.SystemReference, node => node);
-
-                List<SystemTypeReference> results = new();
-                Queue<SystemTypeReference> fringe = new(root.Dependencies);
-
-                while (fringe.Count > 0) {
-                    SystemTypeReference systemReference = fringe.Dequeue();
-
-                    if (!systemReference) {
-                        continue;
-                    }
-
-                    int existingIndex = results.IndexOf(systemReference);
-
-                    if (existingIndex < 0) {
-                        results.Insert(0, systemReference);
-                    } else if (existingIndex > 0) {
-                        results.RemoveAt(existingIndex);
-                        results.Insert(0, systemReference);
-                    }
-
-                    SystemNodeData node = nodesForSystemReferences[systemReference];
-
-                    foreach (SystemTypeReference systemTypeReference in node.Dependencies) {
-                        fringe.Enqueue(systemTypeReference);
-                    }
-                }
-
-                return results;
-            }
-
-            [Serializable]
-            public struct SystemNodeData : IEquatable<SystemNodeData> {
-                public SystemTypeReference SystemReference;
-                public Vector2 NodePosition;
-                public SystemTypeReference[] Dependencies;
-
-                public SystemNodeData(
-                    SystemTypeReference systemReference,
-                    Vector2 nodePosition,
-                    SystemTypeReference[] dependencies
-                ) {
-                    SystemReference = systemReference;
-                    NodePosition = nodePosition;
-                    Dependencies = dependencies;
-                }
-
-                public bool Equals(SystemNodeData other) {
-                    return Equals(SystemReference, other.SystemReference) &&
-                           NodePosition.Equals(other.NodePosition) &&
-                           Dependencies.SequenceEqual(other.Dependencies);
-                }
-
-                public override bool Equals(object obj) {
-                    return obj is SystemNodeData other && Equals(other);
-                }
-
-                public override int GetHashCode() {
-                    unchecked {
-                        int hashCode = (SystemReference != null ? SystemReference.GetHashCode() : 0);
-                        hashCode = (hashCode * 397) ^ NodePosition.GetHashCode();
-                        hashCode = (hashCode * 397) ^ (Dependencies != null ? Dependencies.GetHashCode() : 0);
-                        return hashCode;
-                    }
-                }
-
-                public static bool operator ==(SystemNodeData left, SystemNodeData right) {
-                    return left.Equals(right);
-                }
-
-                public static bool operator !=(SystemNodeData left, SystemNodeData right) {
-                    return !left.Equals(right);
-                }
-            }
-
-            public bool Equals(GraphSystemGroupData other) {
-                return Nodes.SequenceEqual(other.Nodes);
-            }
-
-            public override bool Equals(object obj) {
-                return obj is GraphSystemGroupData other && Equals(other);
-            }
-
-            public override int GetHashCode() {
-                return (Nodes != null ? Nodes.GetHashCode() : 0);
-            }
-
-            public static bool operator ==(GraphSystemGroupData left, GraphSystemGroupData right) {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(GraphSystemGroupData left, GraphSystemGroupData right) {
-                return !left.Equals(right);
-            }
         }
     }
 }
